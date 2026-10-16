@@ -1,0 +1,15 @@
+services:
+  database:
+    container_name: question_test_db
+    image: postgres:16
+    ports:
+      - "${DB_PORT}:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - pg_dev:/var/lib/postgresql/data
+
+volumes:
+  pg_dev:
