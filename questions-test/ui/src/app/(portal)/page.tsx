@@ -2,32 +2,25 @@ import Link from "next/link"
 import {
   ArrowRight,
   CheckCircle2,
-  ChevronRight,
-  Clock,
   Flame,
   Gauge,
-  RefreshCw,
   Target,
   TrendingUp,
 } from "lucide-react"
 
 import { CategoryCard } from "@/components/portal/category-card"
-import { attemptStatusMeta } from "@/components/portal/attempt-status"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { categories } from "@/lib/mock-data"
-import { attemptHistory, categoryMeta, portalDashboard } from "@/lib/portal-data"
+import { categoryMeta, portalDashboard } from "@/lib/portal-data"
 import { portalUser } from "@/lib/portal-user"
-import { cn } from "cn"
 
 export default function BerandaPage() {
   const firstName = portalUser.name.split(" ")[0]
   const { targetWeekly, metrics } = portalDashboard
   const weeklyPercent = Math.round((targetWeekly.done / targetWeekly.total) * 100)
   const featured = categories.slice(0, 4)
-  const recent = attemptHistory.slice(0, 3)
   const accuracyWrongPercent = 100 - metrics.accuracy
 
   return (
@@ -51,9 +44,8 @@ export default function BerandaPage() {
               Halo, {firstName}! 👋
             </h1>
             <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
-              Siap belajar hari ini? Lanjutkan latihan terpandu untuk
-              meningkatkan skor asesmen nasional dan peluang lolos UTBK SNBT
-              impianmu.
+              Siap berlatih hari ini? Asah kemampuan penalaran dan analisis
+              untuk menembus seleksi kerja impianmu.
             </p>
           </div>
 
@@ -215,118 +207,6 @@ export default function BerandaPage() {
             />
           ))}
         </div>
-      </section>
-
-      {/* Recent attempts */}
-      <section className="space-y-4">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="font-heading text-lg font-semibold tracking-tight text-foreground">
-              Latihan Terakhir
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Lacak evaluasi pengerjaan modul terbaru untuk memperkuat poin
-              kelemahan.
-            </p>
-          </div>
-          <Link
-            href="/riwayat"
-            className="text-sm font-medium text-primary hover:underline"
-          >
-            Semua Riwayat
-          </Link>
-        </div>
-
-        <Card>
-          <CardContent className="p-0">
-            <div className="divide-y divide-border">
-              {recent.map((attempt) => {
-                const meta = attemptStatusMeta[attempt.outcome]
-                const Icon = meta.icon
-                return (
-                  <div
-                    key={attempt.id}
-                    className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
-                  >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <span
-                        className={cn(
-                          "flex size-10 shrink-0 items-center justify-center rounded-lg",
-                          meta.className
-                        )}
-                      >
-                        <Icon className="size-5" />
-                      </span>
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="truncate text-sm font-semibold text-foreground">
-                            {attempt.title}
-                          </span>
-                          <Badge
-                            variant="secondary"
-                            className={cn("border-0", meta.className)}
-                          >
-                            {attempt.outcome}
-                          </Badge>
-                        </div>
-                        <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Clock className="size-3.5" />
-                            {attempt.submittedAt}
-                          </span>
-                          <span>•</span>
-                          <span>
-                            {attempt.correct} / {attempt.total} Benar (
-                            {Math.round((attempt.correct / attempt.total) * 100)}
-                            %)
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between gap-4 sm:justify-end">
-                      <div className="text-right">
-                        <span
-                          className={cn(
-                            "font-heading text-lg font-bold tabular-nums",
-                            attempt.outcome === "Remedial"
-                              ? "text-rose-600 dark:text-rose-400"
-                              : "text-emerald-600 dark:text-emerald-400"
-                          )}
-                        >
-                          {attempt.score}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          / 100
-                        </span>
-                      </div>
-                      {attempt.outcome === "Remedial" ? (
-                        <Button
-                          nativeButton={false}
-                          render={<Link href="/kerjakan" />}
-                          size="sm"
-                        >
-                          <RefreshCw data-icon="inline-start" />
-                          Latihan Ulang
-                        </Button>
-                      ) : (
-                        <Button
-                          nativeButton={false}
-                          render={<Link href="/hasil" />}
-                          size="sm"
-                          variant="outline"
-                        >
-                          Tinjau Pembahasan
-                          <ChevronRight data-icon="inline-end" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </CardContent>
-        </Card>
       </section>
     </div>
   )

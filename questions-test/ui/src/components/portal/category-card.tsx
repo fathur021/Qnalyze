@@ -2,11 +2,11 @@ import Link from "next/link"
 import {
   BookOpenText,
   Calculator,
-  Cpu,
-  FlaskConical,
-  Globe2,
   Languages,
+  Lightbulb,
   PlayCircle,
+  Shapes,
+  Target,
   Users,
   type LucideIcon,
 } from "lucide-react"
@@ -19,12 +19,12 @@ import type { CategoryMeta } from "@/lib/portal-data"
 import { cn } from "cn"
 
 const iconByCategory: Record<string, LucideIcon> = {
-  "cat-mat": Calculator,
-  "cat-bind": BookOpenText,
-  "cat-ipa": FlaskConical,
-  "cat-ips": Globe2,
-  "cat-bing": Languages,
-  "cat-tik": Cpu,
+  "cat-verbal": Languages,
+  "cat-numerik": Calculator,
+  "cat-figural": Shapes,
+  "cat-logika": Lightbulb,
+  "cat-analisis": Target,
+  "cat-kepribadian": Users,
 }
 
 export function CategoryCard({

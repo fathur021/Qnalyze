@@ -3,7 +3,6 @@ import {
   ClipboardList,
   Dumbbell,
   FileUp,
-  History,
   Home,
   LayoutDashboard,
   Tags,
@@ -63,7 +62,6 @@ export const isNavActive = (pathname: string, item: NavItem) => {
 export const portalNav: NavItem[] = [
   { label: "Beranda", href: "/", icon: Home },
   { label: "Latihan Soal", href: "/latihan", icon: Dumbbell },
-  { label: "Riwayat", href: "/riwayat", icon: History },
 ]
 
 export const isPortalNavActive = (pathname: string, item: NavItem) => {

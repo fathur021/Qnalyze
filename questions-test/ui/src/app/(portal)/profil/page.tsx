@@ -44,16 +44,16 @@ import { portalUser } from "@/lib/portal-user"
 
 const curriculumOptions = [
   {
-    value: "kelas-12-utbk",
-    label: "Kelas 12 SMA / Persiapan UTBK-SNBT 2025",
+    value: "fresh-graduate",
+    label: "Fresh Graduate — Persiapan Tes Masuk Kerja",
   },
   {
-    value: "alumni-utbk",
-    label: "Alumni / Gap Year (Persiapan UTBK Mandiri)",
+    value: "profesional",
+    label: "Profesional — Psikotes & Rekrutmen Korporat",
   },
   {
-    value: "kelas-11-bakat",
-    label: "Kelas 11 SMA / Asesmen Bakat Minat",
+    value: "bumn",
+    label: "Persiapan Tes BUMN / Perusahaan Swasta",
   },
   {
     value: "kedinasan-skd",
@@ -192,13 +192,13 @@ export default function ProfilPage() {
           <Card>
             <CardContent className="space-y-3">
               <p className="text-sm font-semibold text-foreground">
-                Informasi Akademik
+                Informasi Peserta
               </p>
               <dl className="space-y-2.5 text-sm">
                 <div className="flex items-center justify-between gap-3">
                   <dt className="flex items-center gap-1.5 text-muted-foreground">
                     <GraduationCap className="size-3.5" />
-                    Sekolah
+                    Institusi
                   </dt>
                   <dd className="font-medium text-foreground">
                     {portalUser.school}
@@ -207,7 +207,7 @@ export default function ProfilPage() {
                 <div className="flex items-center justify-between gap-3">
                   <dt className="flex items-center gap-1.5 text-muted-foreground">
                     <BadgeCheck className="size-3.5" />
-                    Tingkat
+                    Jenjang
                   </dt>
                   <dd className="font-medium text-foreground">
                     {portalUser.grade}
@@ -216,7 +216,7 @@ export default function ProfilPage() {
                 <div className="flex items-center justify-between gap-3">
                   <dt className="flex items-center gap-1.5 text-muted-foreground">
                     <UserRound className="size-3.5" />
-                    NISN
+                    NIK
                   </dt>
                   <dd className="font-medium tabular-nums text-foreground">
                     {portalUser.nisn}
@@ -343,7 +343,7 @@ export default function ProfilPage() {
                   <Input defaultValue="+62 812-3456-7890" />
                 </Field>
                 <Field
-                  label="Asal Sekolah / Institusi"
+                  label="Asal Kampus / Institusi"
                   icon={MapPin}
                   hint="Wilayah Provinsi DKI Jakarta."
                 >
@@ -352,7 +352,7 @@ export default function ProfilPage() {
               </div>
 
               <Field
-                label="Jenjang & Kurikulum Target"
+                label="Target Karier & Jenis Tes"
                 icon={GraduationCap}
               >
                 <Select
@@ -375,8 +375,8 @@ export default function ProfilPage() {
 
               <div className="flex items-start gap-2 rounded-lg bg-muted/60 p-3 text-xs text-muted-foreground">
                 <Info className="mt-0.5 size-3.5 shrink-0" />
-                Perubahan email atau NISN resmi memerlukan verifikasi dari
-                koordinator sekolah atau tim bantuan akademik QuizHub.
+                Perubahan email atau NIK resmi memerlukan verifikasi dari tim
+                rekrutmen atau tim bantuan QuizHub.
               </div>
 
               <Separator />
@@ -467,8 +467,8 @@ export default function ProfilPage() {
                     Rangkuman Rapor Mingguan
                   </span>
                   <span className="block text-xs text-muted-foreground">
-                    Kirim statistik analisis kelemahan subtes (TPS, Literasi,
-                    Penalaran Matematika) setiap hari Minggu.
+                    Kirim statistik analisis kelemahan subtes (Verbal, Numerik,
+                    Figural, Logika) setiap hari Minggu.
                   </span>
                 </span>
               </label>

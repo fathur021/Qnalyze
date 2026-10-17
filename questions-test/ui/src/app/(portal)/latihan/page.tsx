@@ -20,8 +20,8 @@ import { cn } from "cn"
 
 const levelOptions = [
   { value: "all", label: "Semua Jenjang" },
-  { value: "sma", label: "SMA / MA" },
-  { value: "utbk", label: "UTBK / SNBT" },
+  { value: "fresh", label: "Fresh Graduate" },
+  { value: "profesional", label: "Profesional" },
 ]
 
 const sortOptions = [
@@ -51,8 +51,8 @@ export default function KatalogPage() {
         meta.tags.some((tag) => tag.toLowerCase().includes(term))
       const matchesLevel =
         level === "all" ||
-        (level === "sma" && meta.level.includes("SMA")) ||
-        (level === "utbk" && meta.level.includes("UTBK"))
+        (level === "fresh" && meta.level.includes("Fresh")) ||
+        (level === "profesional" && meta.level.includes("Profesional"))
       const matchesCategory =
         activeCategory === "all" || category.id === activeCategory
       return matchesQuery && matchesLevel && matchesCategory
@@ -81,9 +81,9 @@ export default function KatalogPage() {
             Latihan Soal &amp; Bank Kategori
           </h1>
           <p className="max-w-3xl text-sm text-muted-foreground">
-            Pilih modul dan mata pelajaran yang ingin kamu pelajari. Semua modul
+            Pilih modul dan jenis tes yang ingin kamu latih. Semua modul
             dilengkapi kunci jawaban terverifikasi, statistik akurasi, dan
-            pembahasan komprehensif berstandar nasional.
+            pembahasan komprehensif berstandar rekrutmen perusahaan.
           </p>
         </div>
       </div>
@@ -98,9 +98,9 @@ export default function KatalogPage() {
           </p>
         </div>
         <div className="rounded-xl bg-card p-4 ring-1 ring-foreground/5">
-          <p className="text-xs font-medium text-muted-foreground">Kurikulum</p>
+          <p className="text-xs font-medium text-muted-foreground">Fokus</p>
           <p className="mt-1 font-heading text-2xl font-bold text-foreground">
-            UTBK / SNBT
+            Psikotes Kerja
           </p>
         </div>
       </div>
@@ -112,7 +112,7 @@ export default function KatalogPage() {
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Cari modul, mata pelajaran, atau topik…"
+            placeholder="Cari modul, jenis tes, atau topik…"
             className="pl-8"
           />
         </div>

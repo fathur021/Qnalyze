@@ -48,8 +48,7 @@ export function SubmitDialog({
         <DialogHeader>
           <DialogTitle>Konfirmasi Pengumpulan</DialogTitle>
           <DialogDescription>
-            Sesi latihan akan diselesaikan. Pembahasan mendalam dan kunci
-            jawaban lengkap terbuka setelah dikumpulkan.
+            Sesi latihan akan diselesaikan dan seluruh jawabanmu akan direkam.
           </DialogDescription>
         </DialogHeader>
 
@@ -64,7 +63,7 @@ export function SubmitDialog({
             Periksa Kembali
           </DialogClose>
           <Button onClick={onConfirm}>
-            Ya, Selesaikan &amp; Lihat Nilai
+            Ya, Selesaikan Latihan
             <ArrowRight data-icon="inline-end" />
           </Button>
         </DialogFooter>
