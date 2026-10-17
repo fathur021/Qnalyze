@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -32,22 +33,24 @@ export function Topbar() {
           <span className="sr-only">Buka menu</span>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-56">
-          <DropdownMenuLabel>Menu Utama</DropdownMenuLabel>
-          {mainNav.map((item) => {
-            const Icon = item.icon
-            const active = isNavActive(pathname, item)
-            return (
-              <DropdownMenuItem
-                key={item.href}
-                nativeButton={false}
-                render={<Link href={item.href} />}
-                className={cn(active && "bg-accent text-accent-foreground")}
-              >
-                <Icon />
-                {item.label}
-              </DropdownMenuItem>
-            )
-          })}
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>Menu Utama</DropdownMenuLabel>
+            {mainNav.map((item) => {
+              const Icon = item.icon
+              const active = isNavActive(pathname, item)
+              return (
+                <DropdownMenuItem
+                  key={item.href}
+                  nativeButton={false}
+                  render={<Link href={item.href} />}
+                  className={cn(active && "bg-accent text-accent-foreground")}
+                >
+                  <Icon />
+                  {item.label}
+                </DropdownMenuItem>
+              )
+            })}
+          </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -96,12 +99,14 @@ export function Topbar() {
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel className="text-sm text-foreground">
-              Ahmad Fauzi
-            </DropdownMenuLabel>
-            <DropdownMenuLabel className="pt-0 font-normal">
-              ahmad.fauzi@qnalyze.id
-            </DropdownMenuLabel>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="text-sm text-foreground">
+                Ahmad Fauzi
+              </DropdownMenuLabel>
+              <DropdownMenuLabel className="pt-0 font-normal">
+                ahmad.fauzi@qnalyze.id
+              </DropdownMenuLabel>
+            </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem>Profil Saya</DropdownMenuItem>
             <DropdownMenuItem>Pengaturan Akun</DropdownMenuItem>
