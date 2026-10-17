@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -103,12 +104,14 @@ export function PortalHeader() {
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-60">
-              <DropdownMenuLabel className="text-sm text-foreground">
-                {portalUser.name}
-              </DropdownMenuLabel>
-              <DropdownMenuLabel className="pt-0 font-normal">
-                {portalUser.email}
-              </DropdownMenuLabel>
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="text-sm text-foreground">
+                  {portalUser.name}
+                </DropdownMenuLabel>
+                <DropdownMenuLabel className="pt-0 font-normal">
+                  {portalUser.email}
+                </DropdownMenuLabel>
+              </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 nativeButton={false}
@@ -141,22 +144,24 @@ export function PortalHeader() {
               <Menu />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Menu Utama</DropdownMenuLabel>
-              {portalNav.map((item) => {
-                const Icon = item.icon
-                const active = isPortalNavActive(pathname, item)
-                return (
-                  <DropdownMenuItem
-                    key={item.href}
-                    nativeButton={false}
-                    render={<Link href={item.href} />}
-                    className={cn(active && "bg-accent text-accent-foreground")}
-                  >
-                    <Icon />
-                    {item.label}
-                  </DropdownMenuItem>
-                )
-              })}
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Menu Utama</DropdownMenuLabel>
+                {portalNav.map((item) => {
+                  const Icon = item.icon
+                  const active = isPortalNavActive(pathname, item)
+                  return (
+                    <DropdownMenuItem
+                      key={item.href}
+                      nativeButton={false}
+                      render={<Link href={item.href} />}
+                      className={cn(active && "bg-accent text-accent-foreground")}
+                    >
+                      <Icon />
+                      {item.label}
+                    </DropdownMenuItem>
+                  )
+                })}
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
