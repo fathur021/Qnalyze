@@ -2,9 +2,7 @@
   "version": "8",
   "dialect": "postgres",
   "id": "4a4c8a2c-58b1-4e0c-95fd-d2fd7225c53e",
-  "prevIds": [
-    "00000000-0000-0000-0000-000000000000"
-  ],
+  "prevIds": ["00000000-0000-0000-0000-000000000000"],
   "ddl": [
     {
       "isRlsEnabled": false,
@@ -263,14 +261,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "users",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "sessions_user_id_users_id_fkey",
@@ -279,9 +273,7 @@
       "table": "sessions"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "questions_pkey",
       "schema": "public",
@@ -289,9 +281,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "sessions_pkey",
       "schema": "public",
@@ -299,9 +289,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "users_pkey",
       "schema": "public",
@@ -310,9 +298,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "email"
-      ],
+      "columns": ["email"],
       "nullsNotDistinct": false,
       "name": "users_email_key",
       "schema": "public",
