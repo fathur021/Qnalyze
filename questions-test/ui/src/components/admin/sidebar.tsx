@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import { GraduationCap, HelpCircle, LogOut, Settings } from "lucide-react"
 
 import { isNavActive, mainNav } from "@/lib/nav"
+import { useSession } from "@/components/auth/session-provider"
 import { cn } from "cn"
 
 const footerNav = [
@@ -14,6 +15,7 @@ const footerNav = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  const { signOut } = useSession()
 
   return (
     <aside className="hidden shrink-0 flex-col border-r border-sidebar-border bg-sidebar lg:flex lg:w-[260px]">
@@ -71,6 +73,7 @@ export function Sidebar() {
         })}
         <button
           type="button"
+          onClick={() => signOut()}
           className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
         >
           <LogOut className="size-4.5 shrink-0" />

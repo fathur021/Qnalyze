@@ -9,6 +9,7 @@ import {
 } from "lucide-react"
 
 import { CategoryCard } from "@/components/portal/category-card"
+import { UserGreeting } from "@/components/portal/user-greeting"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -17,7 +18,6 @@ import { categoryMeta, portalDashboard } from "@/lib/portal-data"
 import { portalUser } from "@/lib/portal-user"
 
 export default function BerandaPage() {
-  const firstName = portalUser.name.split(" ")[0]
   const { targetWeekly, metrics } = portalDashboard
   const weeklyPercent = Math.round((targetWeekly.done / targetWeekly.total) * 100)
   const featured = categories.slice(0, 4)
@@ -40,9 +40,7 @@ export default function BerandaPage() {
                 • Pertahankan ritme belajarmu!
               </span>
             </div>
-            <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-              Halo, {firstName}! 👋
-            </h1>
+            <UserGreeting className="font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl" />
             <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
               Siap berlatih hari ini? Asah kemampuan penalaran dan analisis
               untuk menembus seleksi kerja impianmu.

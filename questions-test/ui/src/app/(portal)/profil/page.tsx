@@ -25,6 +25,7 @@ import {
 } from "lucide-react"
 
 import { PortalBreadcrumbs } from "@/components/portal/breadcrumbs"
+import { useSession } from "@/components/auth/session-provider"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -41,6 +42,7 @@ import {
 } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { portalUser } from "@/lib/portal-user"
+import { formatJoinDate, getInitials } from "@/lib/user"
 
 const curriculumOptions = [
   {
@@ -108,10 +110,17 @@ function Field({
 }
 
 export default function ProfilPage() {
+  const { user } = useSession()
   const [curriculum, setCurriculum] = useState("kelas-12-utbk")
   const [dailyReminder, setDailyReminder] = useState(true)
   const [weeklyReport, setWeeklyReport] = useState(true)
   const maxHours = Math.max(...weeklyHours.map((item) => item.value))
+
+  const displayName = user?.name ?? "Pengguna"
+  const displayEmail = user?.email ?? "-"
+  const initials = user ? getInitials(user.name, user.email) : "?"
+  const userId = user ? `USR-${user.id}` : "-"
+  const joinedAt = user ? formatJoinDate(user.createdAt) : "-"
 
   return (
     <div className="space-y-6">
@@ -126,7 +135,7 @@ export default function ProfilPage() {
         <div className="space-y-1">
           <span className="inline-flex items-center gap-1.5 text-xs font-medium tracking-wide text-primary uppercase">
             <UserRound className="size-3.5" />
-            Pengaturan Akun · ID: {portalUser.id}
+            Pengaturan Akun · ID: {userId}
           </span>
           <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground">
             Profil &amp; Pengaturan Akun
@@ -153,7 +162,7 @@ export default function ProfilPage() {
               <div className="relative">
                 <Avatar className="size-20">
                   <AvatarFallback className="bg-primary/10 text-xl font-semibold text-primary">
-                    {portalUser.initials}
+                    {initials}
                   </AvatarFallback>
                 </Avatar>
                 <button
@@ -166,11 +175,9 @@ export default function ProfilPage() {
               </div>
               <div>
                 <p className="font-heading text-base font-semibold text-foreground">
-                  {portalUser.name}
+                  {displayName}
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  {portalUser.email}
-                </p>
+                <p className="text-xs text-muted-foreground">{displayEmail}</p>
               </div>
               <div className="flex flex-wrap items-center justify-center gap-1.5">
                 <Badge
@@ -227,9 +234,7 @@ export default function ProfilPage() {
                     <Calendar className="size-3.5" />
                     Bergabung
                   </dt>
-                  <dd className="font-medium text-foreground">
-                    {portalUser.joinedAt}
-                  </dd>
+                  <dd className="font-medium text-foreground">{joinedAt}</dd>
                 </div>
               </dl>
             </CardContent>
@@ -325,7 +330,7 @@ export default function ProfilPage() {
                   icon={UserRound}
                   hint="Sesuai kartu identitas atau data Dapodik."
                 >
-                  <Input defaultValue={portalUser.name} />
+                  <Input defaultValue={displayName} />
                 </Field>
                 <Field
                   label="Alamat Email"
@@ -333,7 +338,7 @@ export default function ProfilPage() {
                   verified
                   hint="Email institusi utama tidak dapat diganti secara mandiri."
                 >
-                  <Input type="email" defaultValue={portalUser.email} disabled />
+                  <Input type="email" defaultValue={displayEmail} disabled />
                 </Field>
                 <Field
                   label="Nomor WhatsApp / Seluler"

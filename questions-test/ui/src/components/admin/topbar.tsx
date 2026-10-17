@@ -17,11 +17,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { useSession } from "@/components/auth/session-provider"
 import { isNavActive, mainNav } from "@/lib/nav"
+import { getInitials } from "@/lib/user"
 import { cn } from "cn"
 
 export function Topbar() {
   const pathname = usePathname()
+  const { user, signOut } = useSession()
+  const initials = user ? getInitials(user.name, user.email) : "?"
 
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur supports-backdrop-filter:bg-background/60">
@@ -94,24 +98,26 @@ export function Topbar() {
           >
             <Avatar size="sm">
               <AvatarFallback className="bg-primary/10 text-primary">
-                AF
+                {initials}
               </AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuGroup>
               <DropdownMenuLabel className="text-sm text-foreground">
-                Ahmad Fauzi
+                {user?.name ?? "Pengguna"}
               </DropdownMenuLabel>
               <DropdownMenuLabel className="pt-0 font-normal">
-                ahmad.fauzi@qnalyze.id
+                {user?.email ?? ""}
               </DropdownMenuLabel>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem>Profil Saya</DropdownMenuItem>
             <DropdownMenuItem>Pengaturan Akun</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive">Keluar</DropdownMenuItem>
+            <DropdownMenuItem variant="destructive" onClick={() => signOut()}>
+              Keluar
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
