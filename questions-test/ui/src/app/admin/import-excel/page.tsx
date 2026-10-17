@@ -41,23 +41,23 @@ const steps = [
 const previewRows = [
   {
     row: 2,
-    question: "Hasil dari 15 + 27 adalah …",
-    category: "Matematika",
+    question: "Sinonim dari kata EVOKASI adalah …",
+    category: "Penalaran Verbal",
     type: "Pilihan Ganda",
     valid: true,
   },
   {
     row: 3,
-    question: "Ibu kota Provinsi Jawa Barat adalah …",
-    category: "IPS",
+    question: "Lanjutkan deret: 3, 6, 11, 18, 27, …",
+    category: "Penalaran Numerik",
     type: "Pilihan Ganda",
     valid: true,
   },
   {
     row: 4,
-    question: "Sebutkan tiga contoh sumber energi terbarukan.",
-    category: "IPA",
-    type: "Isian Singkat",
+    question: "Perhatikan pola gambar □, △, ○, □, △, …",
+    category: "Penalaran Figural",
+    type: "Pilihan Ganda",
     valid: true,
   },
   {
@@ -69,8 +69,8 @@ const previewRows = [
   },
   {
     row: 6,
-    question: "Change the sentence into passive voice.",
-    category: "Bahasa Inggris",
+    question: "Semua karyawan memakai kartu akses. Sebagian karyawan membawa laptop. Kesimpulannya …",
+    category: "Penalaran Logis",
     type: "Pilihan Ganda",
     valid: true,
   },

@@ -263,7 +263,7 @@ export default function KerjakanPage() {
             total={total}
             answered={answeredCount}
             flagged={flagged.size}
-            onConfirm={() => router.push("/hasil")}
+            onConfirm={() => router.push("/")}
           />
         </aside>
       </div>
