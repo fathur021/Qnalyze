@@ -7,6 +7,7 @@ import { Loader2, LogIn } from "lucide-react"
 import { toast } from "sonner"
 
 import { PasswordField } from "@/components/auth/password-field"
+import { useSession } from "@/components/auth/session-provider"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -15,9 +16,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
+
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { ApiError, login } from "@/lib/api"
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -28,10 +30,12 @@ type LoginErrors = {
 
 export default function LoginPage() {
   const router = useRouter()
+  const { refresh } = useSession()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [remember, setRemember] = useState(true)
+
   const [errors, setErrors] = useState<LoginErrors>({})
+  const [formError, setFormError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
   const validate = () => {
@@ -47,22 +51,41 @@ export default function LoginPage() {
     return next
   }
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
     const next = validate()
     setErrors(next)
+    setFormError(null)
     if (Object.keys(next).length > 0) {
       return
     }
 
     setSubmitting(true)
-    window.setTimeout(() => {
-      setSubmitting(false)
+    try {
+      await login({ email: email.trim(), password })
+      await refresh()
       toast.success("Berhasil masuk", {
         description: "Selamat datang kembali di Qnalyze.",
       })
-      router.push("/")
-    }, 700)
+
+      const target = new URLSearchParams(window.location.search).get("next")
+      const isSafeRedirect =
+        !!target &&
+        target.startsWith("/") &&
+        !target.startsWith("//") &&
+        !target.startsWith("/\\") &&
+        !target.includes("..")
+      router.push(isSafeRedirect ? target : "/")
+    } catch (error) {
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : "Terjadi kesalahan tak terduga."
+      setFormError(message)
+      toast.error("Gagal masuk", { description: message })
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -76,19 +99,39 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} noValidate className="grid gap-4">
+            {formError ? (
+              <p
+                className="rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive"
+                role="alert"
+              >
+                {formError}
+              </p>
+            ) : null}
             <div className="grid gap-2">
               <Label htmlFor="login-email">Email</Label>
               <Input
                 id="login-email"
                 type="email"
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                onChange={(event) => {
+                  setEmail(event.target.value)
+                  if (errors.email) {
+                    setErrors((prev) => ({ ...prev, email: undefined }))
+                  }
+                }}
                 placeholder="nama@email.com"
                 autoComplete="email"
                 aria-invalid={Boolean(errors.email)}
+                aria-describedby={errors.email ? "login-email-error" : undefined}
               />
               {errors.email ? (
-                <p className="text-xs text-destructive">{errors.email}</p>
+                <p
+                  id="login-email-error"
+                  className="text-xs text-destructive"
+                  role="alert"
+                >
+                  {errors.email}
+                </p>
               ) : null}
             </div>
 
@@ -108,22 +151,30 @@ export default function LoginPage() {
               <PasswordField
                 id="login-password"
                 value={password}
-                onChange={(event) => setPassword(event.target.value)}
+                onChange={(event) => {
+                  setPassword(event.target.value)
+                  if (errors.password) {
+                    setErrors((prev) => ({ ...prev, password: undefined }))
+                  }
+                }}
                 autoComplete="current-password"
                 invalid={Boolean(errors.password)}
+                aria-describedby={
+                  errors.password ? "login-password-error" : undefined
+                }
               />
               {errors.password ? (
-                <p className="text-xs text-destructive">{errors.password}</p>
+                <p
+                  id="login-password-error"
+                  className="text-xs text-destructive"
+                  role="alert"
+                >
+                  {errors.password}
+                </p>
               ) : null}
             </div>
 
-            <label className="flex items-center gap-2 text-sm text-muted-foreground select-none">
-              <Checkbox
-                checked={remember}
-                onCheckedChange={(checked) => setRemember(Boolean(checked))}
-              />
-              Ingat saya di perangkat ini
-            </label>
+
 
             <Button type="submit" size="lg" disabled={submitting}>
               {submitting ? (

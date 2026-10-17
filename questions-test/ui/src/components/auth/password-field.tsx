@@ -15,6 +15,7 @@ export function PasswordField({
   autoComplete = "current-password",
   invalid,
   className,
+  "aria-describedby": ariaDescribedby,
 }: {
   id: string
   value: string
@@ -23,6 +24,7 @@ export function PasswordField({
   autoComplete?: string
   invalid?: boolean
   className?: string
+  "aria-describedby"?: string
 }) {
   const [visible, setVisible] = useState(false)
 
@@ -37,6 +39,7 @@ export function PasswordField({
         autoComplete={autoComplete}
         aria-invalid={invalid}
         className="pr-9"
+        aria-describedby={ariaDescribedby}
       />
       <Button
         type="button"

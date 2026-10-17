@@ -18,12 +18,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { useSession } from "@/components/auth/session-provider"
 import { isPortalNavActive, portalNav } from "@/lib/nav"
-import { portalUser } from "@/lib/portal-user"
+import { getInitials } from "@/lib/user"
 import { cn } from "cn"
 
 export function PortalHeader() {
   const pathname = usePathname()
+  const { user, signOut } = useSession()
+  const initials = user ? getInitials(user.name, user.email) : "?"
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-card/80 backdrop-blur supports-backdrop-filter:bg-card/60">
@@ -99,17 +102,17 @@ export function PortalHeader() {
             >
               <Avatar size="sm">
                 <AvatarFallback className="bg-primary/10 text-primary text-[0.65rem] font-semibold">
-                  {portalUser.initials}
+                  {initials}
                 </AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-60">
               <DropdownMenuGroup>
                 <DropdownMenuLabel className="text-sm text-foreground">
-                  {portalUser.name}
+                  {user?.name ?? "Pengguna"}
                 </DropdownMenuLabel>
                 <DropdownMenuLabel className="pt-0 font-normal">
-                  {portalUser.email}
+                  {user?.email ?? ""}
                 </DropdownMenuLabel>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
@@ -126,7 +129,9 @@ export function PortalHeader() {
                 Pengaturan
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive">Keluar</DropdownMenuItem>
+              <DropdownMenuItem variant="destructive" onClick={() => signOut()}>
+                Keluar
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 

@@ -7,6 +7,7 @@ import { Loader2, UserPlus } from "lucide-react"
 import { toast } from "sonner"
 
 import { PasswordField } from "@/components/auth/password-field"
+import { useSession } from "@/components/auth/session-provider"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -18,6 +19,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { ApiError, register } from "@/lib/api"
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -31,12 +33,14 @@ type RegisterErrors = {
 
 export default function RegisterPage() {
   const router = useRouter()
+  const { refresh } = useSession()
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [agree, setAgree] = useState(false)
   const [errors, setErrors] = useState<RegisterErrors>({})
+  const [formError, setFormError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
   const validate = () => {
@@ -65,22 +69,37 @@ export default function RegisterPage() {
     return next
   }
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
     const next = validate()
     setErrors(next)
+    setFormError(null)
     if (Object.keys(next).length > 0) {
       return
     }
 
     setSubmitting(true)
-    window.setTimeout(() => {
-      setSubmitting(false)
-      toast.success("Akun berhasil dibuat", {
-        description: "Silakan masuk dengan akun baru Anda.",
+    try {
+      await register({
+        name: name.trim(),
+        email: email.trim(),
+        password,
       })
-      router.push("/login")
-    }, 700)
+      await refresh()
+      toast.success("Akun berhasil dibuat", {
+        description: "Selamat datang di Qnalyze.",
+      })
+      router.push("/")
+    } catch (error) {
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : "Terjadi kesalahan tak terduga."
+      setFormError(message)
+      toast.error("Gagal mendaftar", { description: message })
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -94,19 +113,39 @@ export default function RegisterPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} noValidate className="grid gap-4">
+            {formError ? (
+              <p
+                className="rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive"
+                role="alert"
+              >
+                {formError}
+              </p>
+            ) : null}
             <div className="grid gap-2">
               <Label htmlFor="register-name">Nama Lengkap</Label>
               <Input
                 id="register-name"
                 type="text"
                 value={name}
-                onChange={(event) => setName(event.target.value)}
+                onChange={(event) => {
+                  setName(event.target.value)
+                  if (errors.name) {
+                    setErrors((prev) => ({ ...prev, name: undefined }))
+                  }
+                }}
                 placeholder="Nama lengkap Anda"
                 autoComplete="name"
                 aria-invalid={Boolean(errors.name)}
+                aria-describedby={errors.name ? "register-name-error" : undefined}
               />
               {errors.name ? (
-                <p className="text-xs text-destructive">{errors.name}</p>
+                <p
+                  id="register-name-error"
+                  className="text-xs text-destructive"
+                  role="alert"
+                >
+                  {errors.name}
+                </p>
               ) : null}
             </div>
 
@@ -116,13 +155,25 @@ export default function RegisterPage() {
                 id="register-email"
                 type="email"
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                onChange={(event) => {
+                  setEmail(event.target.value)
+                  if (errors.email) {
+                    setErrors((prev) => ({ ...prev, email: undefined }))
+                  }
+                }}
                 placeholder="nama@email.com"
                 autoComplete="email"
                 aria-invalid={Boolean(errors.email)}
+                aria-describedby={errors.email ? "register-email-error" : undefined}
               />
               {errors.email ? (
-                <p className="text-xs text-destructive">{errors.email}</p>
+                <p
+                  id="register-email-error"
+                  className="text-xs text-destructive"
+                  role="alert"
+                >
+                  {errors.email}
+                </p>
               ) : null}
             </div>
 
@@ -131,12 +182,26 @@ export default function RegisterPage() {
               <PasswordField
                 id="register-password"
                 value={password}
-                onChange={(event) => setPassword(event.target.value)}
+                onChange={(event) => {
+                  setPassword(event.target.value)
+                  if (errors.password) {
+                    setErrors((prev) => ({ ...prev, password: undefined }))
+                  }
+                }}
                 autoComplete="new-password"
                 invalid={Boolean(errors.password)}
+                aria-describedby={
+                  errors.password ? "register-password-error" : undefined
+                }
               />
               {errors.password ? (
-                <p className="text-xs text-destructive">{errors.password}</p>
+                <p
+                  id="register-password-error"
+                  className="text-xs text-destructive"
+                  role="alert"
+                >
+                  {errors.password}
+                </p>
               ) : (
                 <p className="text-xs text-muted-foreground">
                   Minimal 8 karakter.
@@ -151,12 +216,26 @@ export default function RegisterPage() {
               <PasswordField
                 id="register-confirm-password"
                 value={confirmPassword}
-                onChange={(event) => setConfirmPassword(event.target.value)}
+                onChange={(event) => {
+                  setConfirmPassword(event.target.value)
+                  if (errors.confirmPassword) {
+                    setErrors((prev) => ({ ...prev, confirmPassword: undefined }))
+                  }
+                }}
                 autoComplete="new-password"
                 invalid={Boolean(errors.confirmPassword)}
+                aria-describedby={
+                  errors.confirmPassword
+                    ? "register-confirm-password-error"
+                    : undefined
+                }
               />
               {errors.confirmPassword ? (
-                <p className="text-xs text-destructive">
+                <p
+                  id="register-confirm-password-error"
+                  className="text-xs text-destructive"
+                  role="alert"
+                >
                   {errors.confirmPassword}
                 </p>
               ) : null}
@@ -167,8 +246,14 @@ export default function RegisterPage() {
                 <Checkbox
                   className="mt-0.5"
                   checked={agree}
-                  onCheckedChange={(checked) => setAgree(Boolean(checked))}
+                  onCheckedChange={(checked) => {
+                    setAgree(Boolean(checked))
+                    if (errors.agree) {
+                      setErrors((prev) => ({ ...prev, agree: undefined }))
+                    }
+                  }}
                   aria-invalid={Boolean(errors.agree)}
+                  aria-describedby={errors.agree ? "register-agree-error" : undefined}
                 />
                 <span>
                   Saya menyetujui{" "}
@@ -183,7 +268,13 @@ export default function RegisterPage() {
                 </span>
               </label>
               {errors.agree ? (
-                <p className="text-xs text-destructive">{errors.agree}</p>
+                <p
+                  id="register-agree-error"
+                  className="text-xs text-destructive"
+                  role="alert"
+                >
+                  {errors.agree}
+                </p>
               ) : null}
             </div>
 
