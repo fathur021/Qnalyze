@@ -75,7 +75,7 @@ export default function LoginPage() {
         !target.startsWith("//") &&
         !target.startsWith("/\\") &&
         !target.includes("..")
-      router.push(isSafeRedirect ? target : "/")
+      router.push(isSafeRedirect ? target : "/admin")
     } catch (error) {
       const message =
         error instanceof ApiError
