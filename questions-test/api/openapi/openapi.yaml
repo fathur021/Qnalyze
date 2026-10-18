@@ -12,9 +12,17 @@ tags:
   - name: Auth
     description: Register dan login
   - name: Users
-    description: Profil user yang sedang login
+    description: Profil user yang sedang login dan kelola pengguna
   - name: Questions
     description: CRUD questions
+  - name: Categories
+    description: Kelola kategori soal
+  - name: Attempts
+    description: Pengerjaan soal oleh peserta
+  - name: Submissions
+    description: Hasil pengerjaan
+  - name: Stats
+    description: Statistik dan rekap
 paths:
   /api/health:
     $ref: ./paths/health.yaml
@@ -30,6 +38,30 @@ paths:
     $ref: ./paths/questions/collection.yaml
   /api/questions/{id}:
     $ref: ./paths/questions/by-id.yaml
+  /api/questions/import:
+    $ref: ./paths/questions/import.yaml
+  /api/questions/{id}/duplicate:
+    $ref: ./paths/questions/duplicate.yaml
+  /api/categories:
+    $ref: ./paths/categories/collection.yaml
+  /api/categories/{id}:
+    $ref: ./paths/categories/by-id.yaml
+  /api/attempts:
+    $ref: ./paths/attempts/start.yaml
+  /api/attempts/{id}:
+    $ref: ./paths/attempts/by-id.yaml
+  /api/attempts/{id}/answers:
+    $ref: ./paths/attempts/answers.yaml
+  /api/submissions:
+    $ref: ./paths/submissions/collection.yaml
+  /api/users:
+    $ref: ./paths/users/list.yaml
+  /api/users/{id}:
+    $ref: ./paths/users/update.yaml
+  /api/stats/me:
+    $ref: ./paths/stats/me.yaml
+  /api/stats/admin:
+    $ref: ./paths/stats/admin.yaml
 components:
   securitySchemes:
     cookieAuth:
@@ -72,7 +104,35 @@ components:
       $ref: ./components/schemas/question.yaml#/CreateQuestionRequest
     UpdateQuestionRequest:
       $ref: ./components/schemas/question.yaml#/UpdateQuestionRequest
+    ImportQuestionsResponse:
+      $ref: ./components/schemas/question.yaml#/ImportQuestionsResponse
     PaginatedQuestions:
       $ref: ./components/schemas/question.yaml#/PaginatedQuestions
+    Category:
+      $ref: ./components/schemas/category.yaml#/Category
+    CreateCategoryRequest:
+      $ref: ./components/schemas/category.yaml#/CreateCategoryRequest
+    UpdateCategoryRequest:
+      $ref: ./components/schemas/category.yaml#/UpdateCategoryRequest
+    Attempt:
+      $ref: ./components/schemas/attempt.yaml#/Attempt
+    AttemptQuestion:
+      $ref: ./components/schemas/attempt.yaml#/AttemptQuestion
+    StartAttemptRequest:
+      $ref: ./components/schemas/attempt.yaml#/StartAttemptRequest
+    SubmitAttemptAnswersRequest:
+      $ref: ./components/schemas/attempt.yaml#/SubmitAttemptAnswersRequest
+    AdminUser:
+      $ref: ./components/schemas/user.yaml#/AdminUser
+    UpdateUserRequest:
+      $ref: ./components/schemas/user.yaml#/UpdateUserRequest
+    Submission:
+      $ref: ./components/schemas/submission.yaml#/Submission
+    PaginatedSubmissions:
+      $ref: ./components/schemas/submission.yaml#/PaginatedSubmissions
+    StatsMe:
+      $ref: ./components/schemas/stats.yaml#/StatsMe
+    StatsAdmin:
+      $ref: ./components/schemas/stats.yaml#/StatsAdmin
 security:
   - cookieAuth: []

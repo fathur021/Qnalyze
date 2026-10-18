@@ -1,0 +1,48 @@
+patch:
+  tags:
+    - Categories
+  summary: Ubah kategori (admin)
+  operationId: updateCategory
+  parameters:
+    - $ref: ../../components/parameters.yaml#/IdParam
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/category.yaml#/UpdateCategoryRequest
+  responses:
+    "200":
+      description: Kategori berhasil diubah
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/category.yaml#/Category
+    "400":
+      $ref: ../../components/responses.yaml#/ValidationError
+    "401":
+      $ref: ../../components/responses.yaml#/Unauthorized
+    "404":
+      $ref: ../../components/responses.yaml#/NotFound
+delete:
+  tags:
+    - Categories
+  summary: Hapus kategori (admin)
+  operationId: deleteCategory
+  description: >-
+    Gagal (409) jika kategori masih memuat soal.
+  parameters:
+    - $ref: ../../components/parameters.yaml#/IdParam
+  responses:
+    "204":
+      description: Kategori berhasil dihapus
+    "401":
+      $ref: ../../components/responses.yaml#/Unauthorized
+    "404":
+      $ref: ../../components/responses.yaml#/NotFound
+    "409":
+      description: Kategori masih memuat soal
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/common.yaml#/Error

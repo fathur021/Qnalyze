@@ -1,0 +1,24 @@
+get:
+  tags:
+    - Stats
+  summary: Statistik dashboard admin
+  operationId: getAdminStats
+  description: >-
+    Dipakai halaman dashboard admin: kartu ringkasan, aktivitas
+    mingguan, sebaran skor, kategori teratas, dan aktivitas
+    terakhir. Khusus admin.
+  responses:
+    "200":
+      description: Data dashboard admin
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/stats.yaml#/StatsAdmin
+    "401":
+      $ref: ../../components/responses.yaml#/Unauthorized
+    "403":
+      description: Bukan admin
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/common.yaml#/Error

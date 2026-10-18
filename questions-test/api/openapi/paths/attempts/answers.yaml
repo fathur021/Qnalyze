@@ -1,0 +1,36 @@
+post:
+  tags:
+    - Attempts
+  summary: Kumpulkan jawaban dan akhiri pengerjaan
+  operationId: submitAttemptAnswers
+  description: >-
+    Seluruh jawaban dikirim sekaligus. Server menghitung skor,
+    menutup sesi, dan mengembalikan hasil beserta kunci jawaban
+    dan pembahasan.
+  parameters:
+    - $ref: ../../components/parameters.yaml#/IdParam
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/attempt.yaml#/SubmitAttemptAnswersRequest
+  responses:
+    "200":
+      description: Pengerjaan selesai, hasil dikirim
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/attempt.yaml#/Attempt
+    "400":
+      $ref: ../../components/responses.yaml#/ValidationError
+    "401":
+      $ref: ../../components/responses.yaml#/Unauthorized
+    "404":
+      $ref: ../../components/responses.yaml#/NotFound
+    "409":
+      description: Pengerjaan sudah diselesaikan sebelumnya
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/common.yaml#/Error

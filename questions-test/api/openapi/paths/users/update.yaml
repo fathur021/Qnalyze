@@ -1,0 +1,33 @@
+patch:
+  tags:
+    - Users
+  summary: Ubah peran atau status pengguna (admin)
+  operationId: updateUser
+  description: Dipakai halaman admin pengguna. Khusus admin.
+  parameters:
+    - $ref: ../../components/parameters.yaml#/IdParam
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/user.yaml#/UpdateUserRequest
+  responses:
+    "200":
+      description: Pengguna berhasil diubah
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/user.yaml#/AdminUser
+    "400":
+      $ref: ../../components/responses.yaml#/ValidationError
+    "401":
+      $ref: ../../components/responses.yaml#/Unauthorized
+    "403":
+      description: Bukan admin
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/common.yaml#/Error
+    "404":
+      $ref: ../../components/responses.yaml#/NotFound

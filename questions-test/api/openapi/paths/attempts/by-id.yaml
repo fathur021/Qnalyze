@@ -1,0 +1,22 @@
+get:
+  tags:
+    - Attempts
+  summary: Detail satu pengerjaan
+  operationId: getAttempt
+  description: >-
+    Selama status Berlangsung, kunci jawaban dan pembahasan
+    disembunyikan. Setelah status Selesai, keduanya ikut
+    dikirim agar peserta bisa meninjau hasilnya.
+  parameters:
+    - $ref: ../../components/parameters.yaml#/IdParam
+  responses:
+    "200":
+      description: Detail pengerjaan
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/attempt.yaml#/Attempt
+    "401":
+      $ref: ../../components/responses.yaml#/Unauthorized
+    "404":
+      $ref: ../../components/responses.yaml#/NotFound

@@ -1,0 +1,160 @@
+AttemptQuestion:
+  type: object
+  description: >-
+    Soal saat pengerjaan peserta. Field answer dan explanation
+    TIDAK disertakan supaya kunci jawaban tidak bocor ke browser.
+  required:
+    - id
+    - number
+    - topic
+    - difficulty
+    - prompt
+    - options
+  properties:
+    id:
+      type: integer
+      example: 101
+    number:
+      type: integer
+      description: Urutan soal dalam paket
+      example: 1
+    topic:
+      type: string
+      example: Silogisme Kategorik
+    difficulty:
+      type: string
+      enum:
+        - Mudah
+        - Sedang
+        - Sulit
+      example: Sulit
+    stimulus:
+      type: string
+      description: Bacaan pendahuluan (opsional)
+      example: "Premis 1: Semua karyawan hadir dalam rapat."
+    prompt:
+      type: string
+      example: Kesimpulan yang sah dari premis di atas adalah...
+    options:
+      type: array
+      items:
+        type: object
+        required:
+          - key
+          - text
+        properties:
+          key:
+            type: string
+            example: A
+          text:
+            type: string
+            example: Semua karyawan mendapat hadiah.
+
+StartAttemptRequest:
+  type: object
+  required:
+    - categoryId
+  properties:
+    categoryId:
+      type: integer
+      example: 4
+    packageLabel:
+      type: string
+      description: Label paket soal (opsional)
+      example: Silogisme & Logika Proposisi
+    questionLimit:
+      type: integer
+      description: Jumlah soal dalam paket. Kosong = semua soal di kategori.
+      minimum: 1
+      example: 10
+
+Attempt:
+  type: object
+  description: >-
+    Satu sesi pengerjaan soal oleh peserta. Selama berlangsung,
+    kunci jawaban tidak dikirim. Setelah selesai, respons
+    memuat hasil beserta kunci jawaban dan pembahasan.
+  required:
+    - id
+    - categoryId
+    - title
+    - durationLimitMinutes
+    - status
+    - startedAt
+    - questions
+  properties:
+    id:
+      type: integer
+      example: 55
+    categoryId:
+      type: integer
+      example: 4
+    title:
+      type: string
+      example: Tes Penalaran Logis - Paket 01
+    packageLabel:
+      type: string
+      example: Silogisme & Logika Proposisi
+    durationLimitMinutes:
+      type: integer
+      example: 20
+    status:
+      type: string
+      enum:
+        - Berlangsung
+        - Selesai
+      example: Berlangsung
+    startedAt:
+      type: string
+      format: date-time
+    finishedAt:
+      type: string
+      format: date-time
+      nullable: true
+    score:
+      type: integer
+      nullable: true
+      description: Nilai 0-100, terisi setelah selesai
+      example: 80
+    correct:
+      type: integer
+      nullable: true
+      description: Jumlah jawaban benar, terisi setelah selesai
+      example: 8
+    total:
+      type: integer
+      description: Jumlah soal dalam paket
+      example: 10
+    durationMinutes:
+      type: number
+      nullable: true
+      description: Durasi pengerjaan dalam menit, terisi setelah selesai
+      example: 17.5
+    questions:
+      type: array
+      items:
+        $ref: "#/AttemptQuestion"
+
+SubmitAttemptAnswersRequest:
+  type: object
+  description: >-
+    Kumpulkan seluruh jawaban peserta sekaligus dan akhiri
+    pengerjaan. Server yang menghitung skor.
+  required:
+    - answers
+  properties:
+    answers:
+      type: array
+      items:
+        type: object
+        required:
+          - questionId
+          - answer
+        properties:
+          questionId:
+            type: integer
+            example: 101
+          answer:
+            type: string
+            description: Kunci opsi yang dipilih atau jawaban teks bebas
+            example: C

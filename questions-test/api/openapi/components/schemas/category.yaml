@@ -1,0 +1,77 @@
+Category:
+  type: object
+  required:
+    - id
+    - name
+    - description
+    - createdAt
+  properties:
+    id:
+      type: integer
+      example: 1
+    name:
+      type: string
+      example: Penalaran Verbal
+    description:
+      type: string
+      example: Sinonim, antonim, analogi, dan pemahaman bacaan.
+    questionCount:
+      type: integer
+      description: Jumlah soal di kategori ini (dihitung otomatis)
+      example: 214
+    tone:
+      type: string
+      description: Warna aksen untuk kartu kategori di UI
+      enum:
+        - indigo
+        - emerald
+        - amber
+        - rose
+        - sky
+        - violet
+      example: indigo
+    createdAt:
+      type: string
+      format: date-time
+
+CreateCategoryRequest:
+  type: object
+  required:
+    - name
+  properties:
+    name:
+      type: string
+      example: Penalaran Verbal
+    description:
+      type: string
+      example: Sinonim, antonim, analogi, dan pemahaman bacaan.
+    tone:
+      type: string
+      enum:
+        - indigo
+        - emerald
+        - amber
+        - rose
+        - sky
+        - violet
+      example: indigo
+
+UpdateCategoryRequest:
+  type: object
+  description: Ubah sebagian data kategori. Field yang tidak dikirim tidak diubah.
+  properties:
+    name:
+      type: string
+      example: Penalaran Verbal
+    description:
+      type: string
+      example: Sinonim, antonim, analogi, dan pemahaman bacaan.
+    tone:
+      type: string
+      enum:
+        - indigo
+        - emerald
+        - amber
+        - rose
+        - sky
+        - violet

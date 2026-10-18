@@ -1,0 +1,27 @@
+post:
+  tags:
+    - Questions
+  summary: Duplikat soal (admin)
+  operationId: duplicateQuestion
+  description: >-
+    Menyalin soal menjadi salinan baru berstatus Draf dengan
+    kode soal baru. Dipakai menu Salin di bank soal. Khusus admin.
+  parameters:
+    - $ref: ../../components/parameters.yaml#/IdParam
+  responses:
+    "201":
+      description: Salinan soal berhasil dibuat
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/question.yaml#/Question
+    "401":
+      $ref: ../../components/responses.yaml#/Unauthorized
+    "403":
+      description: Bukan admin
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/common.yaml#/Error
+    "404":
+      $ref: ../../components/responses.yaml#/NotFound

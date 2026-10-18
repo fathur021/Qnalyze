@@ -1,0 +1,71 @@
+Submission:
+  type: object
+  description: Hasil pengerjaan soal oleh peserta (tampilan admin).
+  required:
+    - id
+    - studentName
+    - exam
+    - categoryId
+    - score
+    - correct
+    - total
+    - durationMinutes
+    - submittedAt
+    - status
+  properties:
+    id:
+      type: integer
+      example: 1201
+    studentName:
+      type: string
+      example: Siti Nurhaliza
+    exam:
+      type: string
+      example: Tes Penalaran Logis - Paket 01
+    categoryId:
+      type: integer
+      example: 4
+    score:
+      type: integer
+      example: 80
+    correct:
+      type: integer
+      example: 8
+    total:
+      type: integer
+      example: 10
+    durationMinutes:
+      type: number
+      example: 17.5
+    submittedAt:
+      type: string
+      format: date-time
+    status:
+      type: string
+      enum:
+        - Selesai
+        - Berlangsung
+        - Belum Mulai
+      example: Selesai
+
+PaginatedSubmissions:
+  type: object
+  required:
+    - data
+    - page
+    - limit
+    - total
+  properties:
+    data:
+      type: array
+      items:
+        $ref: "#/Submission"
+    page:
+      type: integer
+      example: 1
+    limit:
+      type: integer
+      example: 10
+    total:
+      type: integer
+      example: 2480

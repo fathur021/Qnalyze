@@ -1,0 +1,42 @@
+post:
+  tags:
+    - Questions
+  summary: Impor soal massal dari Excel (admin)
+  operationId: importQuestions
+  description: >-
+    Mengunggah berkas .xlsx berisi soal. Kirim sebagai
+    multipart/form-data, bukan JSON. Khusus admin.
+  requestBody:
+    required: true
+    content:
+      multipart/form-data:
+        schema:
+          type: object
+          required:
+            - file
+          properties:
+            file:
+              type: string
+              format: binary
+              description: Berkas soal berekstensi .xlsx
+  responses:
+    "200":
+      description: Impor selesai, memuat jumlah berhasil dan gagal
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/question.yaml#/ImportQuestionsResponse
+    "400":
+      description: Berkas tidak valid atau format salah
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/common.yaml#/Error
+    "401":
+      $ref: ../../components/responses.yaml#/Unauthorized
+    "403":
+      description: Bukan admin
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/common.yaml#/Error

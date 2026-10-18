@@ -1,0 +1,44 @@
+get:
+  tags:
+    - Categories
+  summary: Daftar kategori
+  operationId: listCategories
+  security: []
+  responses:
+    "200":
+      description: Daftar kategori beserta statistik ringkas
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - data
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: ../../components/schemas/category.yaml#/Category
+    "401":
+      $ref: ../../components/responses.yaml#/Unauthorized
+post:
+  tags:
+    - Categories
+  summary: Buat kategori baru (admin)
+  operationId: createCategory
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/category.yaml#/CreateCategoryRequest
+  responses:
+    "201":
+      description: Kategori berhasil dibuat
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/category.yaml#/Category
+    "400":
+      $ref: ../../components/responses.yaml#/ValidationError
+    "401":
+      $ref: ../../components/responses.yaml#/Unauthorized
