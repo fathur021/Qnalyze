@@ -1,0 +1,172 @@
+StatsMe:
+  type: object
+  description: Ringkasan aktivitas belajar milik pengguna yang sedang login.
+  required:
+    - streakDays
+    - sessionsCompleted
+    - averageScore
+    - accuracy
+    - correct
+    - totalItems
+  properties:
+    streakDays:
+      type: integer
+      description: Beruntun hari belajar
+      example: 5
+    sessionsCompleted:
+      type: integer
+      example: 28
+    averageScore:
+      type: number
+      example: 84.5
+    accuracy:
+      type: integer
+      description: Persentase jawaban benar
+      example: 86
+    percentile:
+      type: integer
+      description: Persentil dibanding pengguna lain
+      example: 88
+    correct:
+      type: integer
+      example: 240
+    totalItems:
+      type: integer
+      example: 278
+    targetWeekly:
+      type: object
+      required:
+        - done
+        - total
+      properties:
+        done:
+          type: integer
+          example: 14
+        total:
+          type: integer
+          example: 20
+
+StatsAdmin:
+  type: object
+  description: Data untuk dashboard admin.
+  required:
+    - stats
+    - weeklyActivity
+    - scoreDistribution
+    - topCategories
+    - recentActivity
+  properties:
+    stats:
+      type: array
+      description: Empat kartu ringkasan
+      items:
+        type: object
+        required:
+          - key
+          - label
+          - value
+        properties:
+          key:
+            type: string
+            example: questions
+          label:
+            type: string
+            example: Total Soal
+          value:
+            type: string
+            example: "1.011"
+          delta:
+            type: string
+            example: +48 minggu ini
+          trend:
+            type: string
+            enum:
+              - up
+              - down
+            example: up
+    weeklyActivity:
+      type: array
+      description: Aktivitas pengerjaan per hari
+      items:
+        type: object
+        required:
+          - day
+          - value
+        properties:
+          day:
+            type: string
+            example: Sen
+          value:
+            type: integer
+            example: 320
+    scoreDistribution:
+      type: array
+      description: Sebaran skor per rentang nilai
+      items:
+        type: object
+        required:
+          - label
+          - value
+        properties:
+          label:
+            type: string
+            example: 80–89
+          value:
+            type: integer
+            example: 318
+    topCategories:
+      type: array
+      description: Kategori dengan pengerjaan terbanyak
+      items:
+        type: object
+        required:
+          - categoryId
+          - attempts
+          - average
+        properties:
+          categoryId:
+            type: integer
+            example: 1
+          attempts:
+            type: integer
+            example: 684
+          average:
+            type: integer
+            example: 78
+    recentActivity:
+      type: array
+      description: Aktivitas terakhir di sistem
+      items:
+        type: object
+        required:
+          - id
+          - actor
+          - action
+          - target
+          - time
+        properties:
+          id:
+            type: integer
+            example: 1
+          actor:
+            type: string
+            example: Siti Nurhaliza
+          action:
+            type: string
+            example: menambahkan 12 soal baru ke
+          target:
+            type: string
+            example: Penalaran Verbal
+          time:
+            type: string
+            example: 12 menit lalu
+          tone:
+            type: string
+            enum:
+              - indigo
+              - emerald
+              - amber
+              - rose
+              - sky
+              - violet
+            example: indigo

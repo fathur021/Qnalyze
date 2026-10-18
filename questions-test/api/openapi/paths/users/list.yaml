@@ -1,0 +1,63 @@
+get:
+  tags:
+    - Users
+  summary: Daftar semua pengguna (admin)
+  operationId: listUsers
+  description: Dipakai halaman admin pengguna. Khusus admin.
+  parameters:
+    - $ref: ../../components/parameters.yaml#/PageParam
+    - $ref: ../../components/parameters.yaml#/LimitParam
+    - $ref: ../../components/parameters.yaml#/SearchParam
+    - name: role
+      in: query
+      required: false
+      description: Saring berdasarkan peran
+      schema:
+        type: string
+        enum:
+          - Admin
+          - Guru
+          - Siswa
+    - name: status
+      in: query
+      required: false
+      description: Saring berdasarkan status akun
+      schema:
+        type: string
+        enum:
+          - Aktif
+          - Nonaktif
+  responses:
+    "200":
+      description: Daftar pengguna
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - data
+              - page
+              - limit
+              - total
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: ../../components/schemas/user.yaml#/AdminUser
+              page:
+                type: integer
+                example: 1
+              limit:
+                type: integer
+                example: 10
+              total:
+                type: integer
+                example: 842
+    "401":
+      $ref: ../../components/responses.yaml#/Unauthorized
+    "403":
+      description: Bukan admin
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/common.yaml#/Error

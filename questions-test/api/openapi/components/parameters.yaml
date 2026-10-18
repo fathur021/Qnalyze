@@ -2,10 +2,11 @@ IdParam:
   name: id
   in: path
   required: true
-  description: ID question
+  description: ID resource (question, kategori, attempt, atau user)
   schema:
-    type: string
-    example: q_01j9x7t3f5a2b3c4d5e6f7g8h9
+    type: integer
+    minimum: 1
+    example: 1
 PageParam:
   name: page
   in: query

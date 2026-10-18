@@ -7,6 +7,32 @@ get:
     - $ref: ../../components/parameters.yaml#/PageParam
     - $ref: ../../components/parameters.yaml#/LimitParam
     - $ref: ../../components/parameters.yaml#/SearchParam
+    - name: categoryId
+      in: query
+      required: false
+      description: Saring berdasarkan kategori
+      schema:
+        type: integer
+        example: 4
+    - name: difficulty
+      in: query
+      required: false
+      description: Saring berdasarkan kesulitan
+      schema:
+        type: string
+        enum:
+          - Mudah
+          - Sedang
+          - Sulit
+    - name: status
+      in: query
+      required: false
+      description: Saring berdasarkan status terbit
+      schema:
+        type: string
+        enum:
+          - Terbit
+          - Draf
   responses:
     "200":
       description: Daftar questions

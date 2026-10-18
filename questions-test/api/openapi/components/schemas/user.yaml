@@ -5,10 +5,11 @@ User:
     - email
   properties:
     id:
-      type: string
-      example: u_01j9x7t3f5a2b3c4d5e6f7g8h9
+      type: integer
+      example: 1
     name:
       type: string
+      nullable: true
       example: Renzi
     email:
       type: string
@@ -17,3 +18,66 @@ User:
     createdAt:
       type: string
       format: date-time
+
+AdminUser:
+  type: object
+  description: Profil pengguna untuk tampilan admin, lengkap dengan peran dan status.
+  required:
+    - id
+    - email
+    - role
+    - status
+    - joinedAt
+    - lastActive
+  properties:
+    id:
+      type: integer
+      example: 1
+    name:
+      type: string
+      nullable: true
+      example: Renzi
+    email:
+      type: string
+      format: email
+      example: renzi@example.com
+    role:
+      type: string
+      description: Peran pengguna
+      enum:
+        - Admin
+        - Guru
+        - Siswa
+      example: Siswa
+    status:
+      type: string
+      description: Status akun
+      enum:
+        - Aktif
+        - Nonaktif
+      example: Aktif
+    joinedAt:
+      type: string
+      format: date-time
+    lastActive:
+      type: string
+      format: date-time
+      nullable: true
+
+UpdateUserRequest:
+  type: object
+  description: Ubah peran atau status pengguna. Field yang tidak dikirim tidak diubah.
+  properties:
+    role:
+      type: string
+      enum:
+        - Admin
+        - Guru
+        - Siswa
+      example: Guru
+    status:
+      type: string
+      enum:
+        - Aktif
+        - Nonaktif
+      example: Nonaktif

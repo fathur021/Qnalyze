@@ -1,0 +1,28 @@
+post:
+  tags:
+    - Attempts
+  summary: Mulai pengerjaan soal
+  operationId: startAttempt
+  description: >-
+    Membuat sesi pengerjaan dan mengembalikan paket soal TANPA
+    kunci jawaban dan pembahasan. Keduanya baru dikirim setelah
+    pengerjaan selesai.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/attempt.yaml#/StartAttemptRequest
+  responses:
+    "201":
+      description: Sesi pengerjaan dimulai
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/attempt.yaml#/Attempt
+    "400":
+      $ref: ../../components/responses.yaml#/ValidationError
+    "401":
+      $ref: ../../components/responses.yaml#/Unauthorized
+    "404":
+      $ref: ../../components/responses.yaml#/NotFound

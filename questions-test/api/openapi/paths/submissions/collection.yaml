@@ -1,0 +1,42 @@
+get:
+  tags:
+    - Submissions
+  summary: Daftar hasil pengerjaan (admin)
+  operationId: listSubmissions
+  description: Dipakai halaman admin hasil pengerjaan. Khusus admin.
+  parameters:
+    - $ref: ../../components/parameters.yaml#/PageParam
+    - $ref: ../../components/parameters.yaml#/LimitParam
+    - $ref: ../../components/parameters.yaml#/SearchParam
+    - name: categoryId
+      in: query
+      required: false
+      description: Saring berdasarkan kategori
+      schema:
+        type: integer
+        example: 4
+    - name: status
+      in: query
+      required: false
+      description: Saring berdasarkan status
+      schema:
+        type: string
+        enum:
+          - Selesai
+          - Berlangsung
+          - Belum Mulai
+  responses:
+    "200":
+      description: Daftar hasil pengerjaan
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/submission.yaml#/PaginatedSubmissions
+    "401":
+      $ref: ../../components/responses.yaml#/Unauthorized
+    "403":
+      description: Bukan admin
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/common.yaml#/Error

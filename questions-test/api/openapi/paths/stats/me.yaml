@@ -1,0 +1,15 @@
+get:
+  tags:
+    - Stats
+  summary: Statistik milik pengguna yang sedang login
+  operationId: getMyStats
+  description: Dipakai beranda portal dan halaman profil (streak, akurasi, rata-rata skor).
+  responses:
+    "200":
+      description: Ringkasan aktivitas belajar
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/stats.yaml#/StatsMe
+    "401":
+      $ref: ../../components/responses.yaml#/Unauthorized

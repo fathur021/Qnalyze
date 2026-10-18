@@ -1,18 +1,83 @@
 Question:
   type: object
+  description: >-
+    Soal di bank soal. Field answer dan explanation hanya dikirim
+    untuk tampilan admin; saat pengerjaan peserta, keduanya
+    disembunyikan oleh endpoint yang berbeda.
   required:
     - id
-    - title
+    - code
+    - text
+    - categoryId
+    - type
+    - difficulty
+    - status
+    - options
+    - answer
+    - createdAt
+    - updatedAt
   properties:
     id:
+      type: integer
+      example: 1
+    code:
       type: string
-      example: q_01j9x7t3f5a2b3c4d5e6f7g8h9
-    title:
+      description: Kode unik soal
+      example: Q-LG-001
+    text:
       type: string
+      description: Pertanyaan
       example: Apa ibu kota Indonesia?
-    body:
+    categoryId:
+      type: integer
+      description: Kategori tempat soal berada
+      example: 3
+    type:
       type: string
-      example: Pilih satu jawaban yang benar.
+      description: Tipe soal
+      enum:
+        - Pilihan Ganda
+        - Benar/Salah
+        - Isian Singkat
+      example: Pilihan Ganda
+    difficulty:
+      type: string
+      description: Tingkat kesulitan
+      enum:
+        - Mudah
+        - Sedang
+        - Sulit
+      example: Mudah
+    status:
+      type: string
+      description: Status terbit
+      enum:
+        - Terbit
+        - Draf
+      example: Terbit
+    options:
+      type: array
+      description: Daftar opsi jawaban
+      items:
+        type: object
+        required:
+          - key
+          - text
+        properties:
+          key:
+            type: string
+            example: A
+          text:
+            type: string
+            example: Jakarta
+    answer:
+      type: string
+      description: Kunci jawaban (hanya untuk tampilan admin)
+      example: A
+    explanation:
+      type: string
+      description: Pembahasan jawaban
+      example: Jakarta adalah ibu kota Indonesia.
     createdAt:
       type: string
       format: date-time
@@ -23,22 +88,144 @@ Question:
 CreateQuestionRequest:
   type: object
   required:
-    - title
+    - code
+    - text
+    - categoryId
+    - type
+    - difficulty
+    - options
+    - answer
   properties:
-    title:
+    code:
+      type: string
+      example: Q-LG-001
+    text:
       type: string
       example: Apa ibu kota Indonesia?
-    body:
+    categoryId:
+      type: integer
+      example: 3
+    type:
       type: string
-      example: Pilih satu jawaban yang benar.
+      enum:
+        - Pilihan Ganda
+        - Benar/Salah
+        - Isian Singkat
+      example: Pilihan Ganda
+    difficulty:
+      type: string
+      enum:
+        - Mudah
+        - Sedang
+        - Sulit
+      example: Mudah
+    status:
+      type: string
+      description: Kosong = Draf
+      enum:
+        - Terbit
+        - Draf
+      example: Draf
+    options:
+      type: array
+      items:
+        type: object
+        required:
+          - key
+          - text
+        properties:
+          key:
+            type: string
+            example: A
+          text:
+            type: string
+            example: Jakarta
+    answer:
+      type: string
+      example: A
+    explanation:
+      type: string
+      example: Jakarta adalah ibu kota Indonesia.
 
 UpdateQuestionRequest:
   type: object
+  description: Ubah sebagian isi soal. Field yang tidak dikirim tidak diubah.
   properties:
-    title:
+    code:
       type: string
-    body:
+      example: Q-LG-002
+    text:
       type: string
+      example: Apa ibu kota Indonesia?
+    categoryId:
+      type: integer
+      example: 3
+    type:
+      type: string
+      enum:
+        - Pilihan Ganda
+        - Benar/Salah
+        - Isian Singkat
+    difficulty:
+      type: string
+      enum:
+        - Mudah
+        - Sedang
+        - Sulit
+    status:
+      type: string
+      enum:
+        - Terbit
+        - Draf
+    options:
+      type: array
+      items:
+        type: object
+        required:
+          - key
+          - text
+        properties:
+          key:
+            type: string
+            example: A
+          text:
+            type: string
+            example: Jakarta
+    answer:
+      type: string
+      example: A
+    explanation:
+      type: string
+      example: Jakarta adalah ibu kota Indonesia.
+
+ImportQuestionsResponse:
+  type: object
+  description: Hasil impor soal dari berkas Excel.
+  required:
+    - imported
+    - failed
+  properties:
+    imported:
+      type: integer
+      example: 42
+    failed:
+      type: integer
+      example: 2
+    errors:
+      type: array
+      description: Baris yang gagal beserta alasannya
+      items:
+        type: object
+        required:
+          - row
+          - message
+        properties:
+          row:
+            type: integer
+            example: 7
+          message:
+            type: string
+            example: Kolom jawaban kosong
 
 PaginatedQuestions:
   type: object
