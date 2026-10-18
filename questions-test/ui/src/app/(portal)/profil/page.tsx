@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import {
   AlertTriangle,
   BadgeCheck,
@@ -13,6 +14,7 @@ import {
   GraduationCap,
   Info,
   Lock,
+  LogIn,
   LogOut,
   Mail,
   MapPin,
@@ -28,7 +30,7 @@ import { PortalBreadcrumbs } from "@/components/portal/breadcrumbs"
 import { useSession } from "@/components/auth/session-provider"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
@@ -110,11 +112,40 @@ function Field({
 }
 
 export default function ProfilPage() {
-  const { user } = useSession()
+  const { user, status } = useSession()
   const [curriculum, setCurriculum] = useState("kelas-12-utbk")
   const [dailyReminder, setDailyReminder] = useState(true)
   const [weeklyReport, setWeeklyReport] = useState(true)
   const maxHours = Math.max(...weeklyHours.map((item) => item.value))
+
+  if (status === "unauthenticated") {
+    return (
+      <div className="space-y-6">
+        <PortalBreadcrumbs
+          items={[
+            { label: "Beranda", href: "/" },
+            { label: "Profil Pengguna" },
+          ]}
+        />
+
+        <Card className="w-full max-w-xl">
+          <CardContent className="space-y-4 text-center">
+            <p className="font-heading text-lg font-semibold text-foreground">
+              Masuk untuk mengelola akun
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Halaman ini menampilkan data akunmu — identitas, preferensi
+              belajar, dan pengaturan keamanan. Silakan masuk terlebih dahulu.
+            </p>
+            <Link href="/login" className={buttonVariants()}>
+              <LogIn data-icon="inline-start" />
+              Masuk
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   const displayName = user?.name ?? "Pengguna"
   const displayEmail = user?.email ?? "-"

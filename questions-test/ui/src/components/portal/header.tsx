@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Bell, GraduationCap, Menu, Search } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -25,7 +25,7 @@ import { cn } from "cn"
 
 export function PortalHeader() {
   const pathname = usePathname()
-  const { user, signOut } = useSession()
+  const { user, status, signOut } = useSession()
   const initials = user ? getInitials(user.name, user.email) : "?"
 
   return (
@@ -89,51 +89,57 @@ export function PortalHeader() {
           </Button>
           <ThemeToggle />
 
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full"
-                  aria-label="Menu pengguna"
-                />
-              }
-            >
-              <Avatar size="sm">
-                <AvatarFallback className="bg-primary/10 text-primary text-[0.65rem] font-semibold">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-60">
-              <DropdownMenuGroup>
-                <DropdownMenuLabel className="text-sm text-foreground">
-                  {user?.name ?? "Pengguna"}
-                </DropdownMenuLabel>
-                <DropdownMenuLabel className="pt-0 font-normal">
-                  {user?.email ?? ""}
-                </DropdownMenuLabel>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                nativeButton={false}
-                render={<Link href="/profil" />}
+          {status === "authenticated" ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full"
+                    aria-label="Menu pengguna"
+                  />
+                }
               >
-                Profil Saya
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                nativeButton={false}
-                render={<Link href="/profil" />}
-              >
-                Pengaturan
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive" onClick={() => signOut()}>
-                Keluar
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <Avatar size="sm">
+                  <AvatarFallback className="bg-primary/10 text-primary text-[0.65rem] font-semibold">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-60">
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel className="text-sm text-foreground">
+                    {user?.name ?? "Pengguna"}
+                  </DropdownMenuLabel>
+                  <DropdownMenuLabel className="pt-0 font-normal">
+                    {user?.email ?? ""}
+                  </DropdownMenuLabel>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  nativeButton={false}
+                  render={<Link href="/admin" />}
+                >
+                  Dashboard Admin
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  nativeButton={false}
+                  render={<Link href="/profil" />}
+                >
+                  Profil Saya
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem variant="destructive" onClick={() => signOut()}>
+                  Keluar
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Link href="/login" className={buttonVariants()}>
+              Masuk
+            </Link>
+          )}
 
           <DropdownMenu>
             <DropdownMenuTrigger

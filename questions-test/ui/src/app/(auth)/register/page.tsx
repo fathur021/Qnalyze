@@ -89,7 +89,7 @@ export default function RegisterPage() {
       toast.success("Akun berhasil dibuat", {
         description: "Selamat datang di Qnalyze.",
       })
-      router.push("/")
+      router.push("/admin")
     } catch (error) {
       const message =
         error instanceof ApiError
