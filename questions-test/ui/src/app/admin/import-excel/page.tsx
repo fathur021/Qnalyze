@@ -7,6 +7,7 @@ import {
   Download,
   FileSpreadsheet,
   FileUp,
+  LoaderCircle,
   UploadCloud,
 } from "lucide-react"
 import { toast } from "sonner"
@@ -29,73 +30,109 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  importQuestions,
+  previewQuestionsImport,
+  type ExcelImportPreview,
+  type ExcelImportResult,
+} from "@/lib/api"
 import { cn } from "cn"
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024
+const ALLOWED_EXTENSIONS = [".xlsx", ".xls", ".csv"]
 const steps = [
   { id: 1, label: "Unduh Template" },
   { id: 2, label: "Unggah File" },
-  { id: 3, label: "Tinjau Data" },
-  { id: 4, label: "Selesai" },
+  { id: 3, label: "Selesai" },
 ]
 
-const previewRows = [
-  {
-    row: 2,
-    question: "Sinonim dari kata EVOKASI adalah …",
-    category: "Penalaran Verbal",
-    type: "Pilihan Ganda",
-    valid: true,
-  },
-  {
-    row: 3,
-    question: "Lanjutkan deret: 3, 6, 11, 18, 27, …",
-    category: "Penalaran Numerik",
-    type: "Pilihan Ganda",
-    valid: true,
-  },
-  {
-    row: 4,
-    question: "Perhatikan pola gambar □, △, ○, □, △, …",
-    category: "Penalaran Figural",
-    type: "Pilihan Ganda",
-    valid: true,
-  },
-  {
-    row: 5,
-    question: "(sel kosong)",
-    category: "—",
-    type: "—",
-    valid: false,
-  },
-  {
-    row: 6,
-    question: "Semua karyawan memakai kartu akses. Sebagian karyawan membawa laptop. Kesimpulannya …",
-    category: "Penalaran Logis",
-    type: "Pilihan Ganda",
-    valid: true,
-  },
-]
+function csvCell(value: string | number) {
+  return `"${String(value).replaceAll('"', '""')}"`
+}
+
+function downloadErrorReport(result: ExcelImportResult) {
+  const rows = [
+    ["Baris", "Pesan error"].map(csvCell).join(","),
+    ...result.errors.map(({ row, message }) => [row, message].map(csvCell).join(",")),
+  ]
+  const blob = new Blob(["\uFEFF", rows.join("\r\n")], {
+    type: "text/csv;charset=utf-8",
+  })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement("a")
+  link.href = url
+  link.download = "laporan-error-impor-soal.csv"
+  link.click()
+  URL.revokeObjectURL(url)
+}
 
 export default function ImportExcelPage() {
   const inputRef = useRef<HTMLInputElement>(null)
-  const [fileName, setFileName] = useState<string | null>(null)
+  const [file, setFile] = useState<File | null>(null)
+  const [preview, setPreview] = useState<ExcelImportPreview | null>(null)
+  const [result, setResult] = useState<ExcelImportResult | null>(null)
+  const [isReading, setIsReading] = useState(false)
+  const [isImporting, setIsImporting] = useState(false)
 
-  const handleSelect = (files: FileList | null) => {
-    if (files && files.length > 0) setFileName(files[0].name)
+  const selectFile = async (selectedFile?: File) => {
+    if (!selectedFile) return
+
+    const extension = selectedFile.name.slice(selectedFile.name.lastIndexOf(".")).toLowerCase()
+    if (!ALLOWED_EXTENSIONS.includes(extension)) {
+      toast.error("Pilih file .xlsx, .xls, atau .csv.")
+      return
+    }
+    if (selectedFile.size > MAX_FILE_SIZE) {
+      toast.error("Ukuran file maksimal 5 MB.")
+      return
+    }
+
+    setFile(selectedFile)
+    setPreview(null)
+    setResult(null)
+    setIsReading(true)
+    try {
+      setPreview(await previewQuestionsImport(selectedFile))
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "File tidak dapat dibaca.")
+    } finally {
+      setIsReading(false)
+    }
   }
 
-  const handleImport = () => {
-    toast.success("128 soal berhasil diimpor ke bank soal.")
-    setFileName(null)
+  const handleImport = async () => {
+    if (!file) return
+
+    setIsImporting(true)
+    try {
+      const importResult = await importQuestions(file)
+      setResult(importResult)
+      toast.success(`${importResult.imported} soal berhasil diimpor.`)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Impor soal gagal.")
+    } finally {
+      setIsImporting(false)
+    }
   }
+
+  const resetImport = () => {
+    setFile(null)
+    setPreview(null)
+    setResult(null)
+    if (inputRef.current) inputRef.current.value = ""
+  }
+
+  const activeStep = result ? 3 : 2
+  const rowErrors = new Map(result?.errors.map((error) => [error.row, error.message]))
 
   return (
     <div className="space-y-5">
-      <PageHeader
-        title="Import Excel"
-        description="Impor soal secara massal dari file spreadsheet."
-      >
-        <Button variant="outline">
+      <PageHeader title="Import Excel" description="Impor soal secara massal dari file spreadsheet.">
+        <Button
+          nativeButton={false}
+          render={<a href="/template-impor-soal.xlsx" download />}
+          variant="outline"
+        >
           <Download />
           Unduh Template
         </Button>
@@ -105,8 +142,8 @@ export default function ImportExcelPage() {
         <CardContent>
           <ol className="flex flex-col gap-3 sm:flex-row sm:items-center">
             {steps.map((step, index) => {
-              const active = step.id === (fileName ? 3 : 2)
-              const done = step.id < (fileName ? 3 : 2)
+              const active = step.id === activeStep
+              const done = step.id < activeStep
               return (
                 <li key={step.id} className="flex flex-1 items-center gap-3">
                   <span
@@ -121,17 +158,10 @@ export default function ImportExcelPage() {
                   >
                     {done ? <CheckCircle2 className="size-4" /> : step.id}
                   </span>
-                  <span
-                    className={cn(
-                      "text-sm font-medium",
-                      active ? "text-foreground" : "text-muted-foreground"
-                    )}
-                  >
+                  <span className={cn("text-sm font-medium", active ? "text-foreground" : "text-muted-foreground")}>
                     {step.label}
                   </span>
-                  {index < steps.length - 1 ? (
-                    <span className="hidden h-px flex-1 bg-border sm:block" />
-                  ) : null}
+                  {index < steps.length - 1 ? <span className="hidden h-px flex-1 bg-border sm:block" /> : null}
                 </li>
               )
             })}
@@ -139,39 +169,32 @@ export default function ImportExcelPage() {
         </CardContent>
       </Card>
 
-      {!fileName ? (
+      {!file ? (
         <Card>
           <CardContent>
             <div
               className="flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-border bg-muted/30 px-6 py-14 text-center"
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => {
-                e.preventDefault()
-                handleSelect(e.dataTransfer.files)
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={(event) => {
+                event.preventDefault()
+                void selectFile(event.dataTransfer.files[0])
               }}
             >
               <span className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <UploadCloud className="size-6" />
               </span>
               <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">
-                  Tarik & lepas file Excel di sini
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Format .xlsx atau .csv, maksimal 5 MB.
-                </p>
+                <p className="text-sm font-medium text-foreground">Tarik & lepas file Excel di sini</p>
+                <p className="text-xs text-muted-foreground">Format .xlsx, .xls, atau .csv, maksimal 5 MB.</p>
               </div>
               <input
                 ref={inputRef}
                 type="file"
                 accept=".xlsx,.xls,.csv"
                 className="hidden"
-                onChange={(e) => handleSelect(e.target.files)}
+                onChange={(event) => void selectFile(event.target.files?.[0])}
               />
-              <Button
-                variant="outline"
-                onClick={() => inputRef.current?.click()}
-              >
+              <Button variant="outline" onClick={() => inputRef.current?.click()}>
                 <FileUp />
                 Pilih File
               </Button>
@@ -179,122 +202,118 @@ export default function ImportExcelPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-5">
+        <>
           <Card>
             <CardContent className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <span className="flex size-10 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                <span className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                   <FileSpreadsheet className="size-5" />
                 </span>
                 <div>
-                  <p className="text-sm font-medium text-foreground">
-                    {fileName}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    132 baris terdeteksi · 5 MB
-                  </p>
+                  <p className="text-sm font-medium text-foreground">{file.name}</p>
+                  <p className="text-xs text-muted-foreground">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Badge
-                  variant="outline"
-                  className="border-transparent bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                >
-                  <CheckCircle2 />
-                  128 valid
-                </Badge>
-                <Badge
-                  variant="outline"
-                  className="border-transparent bg-destructive/10 text-destructive"
-                >
-                  <AlertTriangle />
-                  4 perlu diperbaiki
-                </Badge>
-                <Button variant="ghost" size="sm" onClick={() => setFileName(null)}>
+              {preview ? (
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="border-transparent bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                    <CheckCircle2 /> {preview.valid} valid
+                  </Badge>
+                  <Badge variant="outline" className="border-transparent bg-destructive/10 text-destructive">
+                    <AlertTriangle /> {preview.failed} perlu diperbaiki
+                  </Badge>
+                </div>
+              ) : null}
+              {!result ? (
+                <Button variant="ghost" size="sm" onClick={resetImport} disabled={isReading || isImporting}>
                   Ganti file
                 </Button>
-              </div>
+              ) : null}
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Pratinjau Data</CardTitle>
-              <CardDescription>
-                Tinjau beberapa baris pertama sebelum mengimpor.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-lg border border-border">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="hover:bg-transparent">
-                      <TableHead className="w-14">Baris</TableHead>
-                      <TableHead>Pertanyaan</TableHead>
-                      <TableHead>Kategori</TableHead>
-                      <TableHead>Tipe</TableHead>
-                      <TableHead className="w-24">Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {previewRows.map((row) => (
-                      <TableRow
-                        key={row.row}
-                        className={cn(!row.valid && "bg-destructive/5")}
-                      >
-                        <TableCell className="tabular-nums text-muted-foreground">
-                          {row.row}
-                        </TableCell>
-                        <TableCell
-                          className={cn(
-                            "max-w-md whitespace-normal",
-                            !row.valid && "text-destructive"
-                          )}
-                        >
-                          {row.question}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {row.category}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {row.type}
-                        </TableCell>
-                        <TableCell>
-                          {row.valid ? (
-                            <Badge
-                              variant="outline"
-                              className="border-transparent bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                            >
-                              Valid
-                            </Badge>
-                          ) : (
-                            <Badge
-                              variant="outline"
-                              className="border-transparent bg-destructive/10 text-destructive"
-                            >
-                              Error
-                            </Badge>
-                          )}
-                        </TableCell>
+          {isReading ? (
+            <Card>
+              <CardContent className="flex items-center gap-2 text-sm text-muted-foreground">
+                <LoaderCircle className="size-4 animate-spin" /> Membaca isi file...
+              </CardContent>
+            </Card>
+          ) : null}
+
+          {preview ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>{result ? "Hasil Impor" : "Data Soal"}</CardTitle>
+                <CardDescription>
+                  {result
+                    ? `${result.imported} soal berhasil disimpan. ${result.failed} baris gagal.`
+                    : "Data dan validasi soal yang terbaca dari file."}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="rounded-lg border border-border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="hover:bg-transparent">
+                        <TableHead className="w-16">Baris</TableHead>
+                        <TableHead>Kode</TableHead>
+                        <TableHead>Pertanyaan</TableHead>
+                        <TableHead>Kategori</TableHead>
+                        <TableHead>Tipe</TableHead>
+                        <TableHead>Status</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+                    </TableHeader>
+                    <TableBody>
+                      {preview.rows.map((row) => {
+                        const errors = result
+                          ? rowErrors.has(row.row)
+                            ? [rowErrors.get(row.row)!]
+                            : []
+                          : row.errors
+                        return (
+                          <TableRow key={row.row} className={cn(errors.length > 0 && "bg-destructive/5")}>
+                            <TableCell className="tabular-nums text-muted-foreground">{row.row}</TableCell>
+                            <TableCell>{row.question?.code ?? "—"}</TableCell>
+                            <TableCell className="max-w-md whitespace-normal">
+                              <div>{row.question?.text ?? "Data tidak terbaca"}</div>
+                              {errors.map((error) => (
+                                <p key={error} className="mt-1 text-xs text-destructive">{error}</p>
+                              ))}
+                            </TableCell>
+                            <TableCell>{row.question?.category ?? "—"}</TableCell>
+                            <TableCell>{row.question?.type ?? "—"}</TableCell>
+                            <TableCell>
+                              {errors.length === 0 ? (
+                                <Badge variant="outline" className="border-transparent bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">Valid</Badge>
+                              ) : (
+                                <Badge variant="outline" className="border-transparent bg-destructive/10 text-destructive">Error</Badge>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+                {result?.errors.length ? (
+                  <Button variant="outline" onClick={() => downloadErrorReport(result)}>
+                    <Download />
+                    Unduh Laporan Error
+                  </Button>
+                ) : null}
+              </CardContent>
+            </Card>
+          ) : null}
 
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <Button variant="outline">
-              <AlertTriangle />
-              Unduh Laporan Error
-            </Button>
-            <Button onClick={handleImport}>
-              <CheckCircle2 />
-              Import 128 Soal
-            </Button>
-          </div>
-        </div>
+          {!result ? (
+            <div className="flex justify-end">
+              <Button onClick={handleImport} disabled={isReading || isImporting || !preview}>
+                {isImporting ? <LoaderCircle className="animate-spin" /> : <CheckCircle2 />}
+                {isImporting ? "Mengimpor..." : "Mulai Import"}
+              </Button>
+            </div>
+          ) : null}
+        </>
       )}
     </div>
   )

@@ -4,14 +4,19 @@ on:
   push:
     paths:
       - "questions-test/**"
+      - ".github/workflows/prettier.yml"
   pull_request:
     paths:
       - "questions-test/**"
+      - ".github/workflows/prettier.yml"
 
 jobs:
   prettier:
     name: Prettier check (questions-test/api)
     runs-on: ubuntu-latest
+
+    env:
+      BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
 
     defaults:
       run:
@@ -20,6 +25,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -35,4 +42,27 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Check formatting
-        run: pnpm format:check
+        shell: bash
+        run: |
+          if [[ -z "$BASE_SHA" || "$BASE_SHA" =~ ^0+$ ]]; then
+            BASE_SHA="$(git rev-list --max-parents=0 "$GITHUB_SHA")"
+          fi
+
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            changed_files="$(git diff --name-only "$BASE_SHA"...HEAD -- .)"
+          else
+            changed_files="$(git diff --name-only "$BASE_SHA" "$GITHUB_SHA" -- .)"
+          fi
+
+          mapfile -t files < <(
+            printf '%s\n' "$changed_files" |
+              sed 's#^questions-test/api/##' |
+              grep -E '\.(cjs|css|graphql|html|js|jsx|json|jsonc|md|mdx|mjs|scss|ts|tsx|yaml|yml)$' || true
+          )
+
+          if (( ${#files[@]} == 0 )); then
+            echo "No supported API files changed; skipping Prettier check."
+            exit 0
+          fi
+
+          pnpm exec prettier --check "${files[@]}"

@@ -1,11 +1,11 @@
 post:
   tags:
     - Questions
-  summary: Impor soal massal dari Excel (admin)
+  summary: Impor soal massal dari Excel
   operationId: importQuestions
   description: >-
     Mengunggah berkas .xlsx berisi soal. Kirim sebagai
-    multipart/form-data, bukan JSON. Khusus admin.
+    multipart/form-data, bukan JSON. Memerlukan sesi login.
   requestBody:
     required: true
     content:
@@ -34,9 +34,3 @@ post:
             $ref: ../../components/schemas/common.yaml#/Error
     "401":
       $ref: ../../components/responses.yaml#/Unauthorized
-    "403":
-      description: Bukan admin
-      content:
-        application/json:
-          schema:
-            $ref: ../../components/schemas/common.yaml#/Error

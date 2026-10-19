@@ -1,0 +1,54 @@
+post:
+  tags:
+    - Questions
+  summary: Membaca dan memvalidasi soal dari file
+  operationId: previewQuestionsImport
+  description: >-
+    Mengembalikan isi dan status validasi setiap baris tanpa menyimpan soal.
+    Memerlukan sesi login dan menggunakan multipart/form-data.
+  requestBody:
+    required: true
+    content:
+      multipart/form-data:
+        schema:
+          type: object
+          required:
+            - file
+          properties:
+            file:
+              type: string
+              format: binary
+  responses:
+    "200":
+      description: Jumlah soal valid, gagal, dan detail baris
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            valid:
+              type: integer
+            failed:
+              type: integer
+            rows:
+              type: array
+              items:
+                type: object
+                properties:
+                  row:
+                    type: integer
+                  question:
+                    type: object
+                    nullable: true
+                  errors:
+                    type: array
+                    items:
+                      type: string
+    "400":
+      description: Berkas tidak valid atau format salah
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/common.yaml#/Error
+    "401":
+      $ref: ../../components/responses.yaml#/Unauthorized

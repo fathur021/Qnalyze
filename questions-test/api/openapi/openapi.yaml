@@ -40,6 +40,8 @@ paths:
     $ref: ./paths/questions/by-id.yaml
   /api/questions/import:
     $ref: ./paths/questions/import.yaml
+  /api/questions/import/preview:
+    $ref: ./paths/questions/import-preview.yaml
   /api/questions/{id}/duplicate:
     $ref: ./paths/questions/duplicate.yaml
   /api/categories:

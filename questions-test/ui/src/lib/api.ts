@@ -4,9 +4,29 @@ export type User = {
   email: string
   createdAt: string
 }
-
 export type AuthResponse = {
   user: User
+}
+
+export type ExcelImportError = {
+  row: number
+  message: string
+}
+
+export type ExcelImportResult = {
+  imported: number
+  failed: number
+  errors: ExcelImportError[]
+}
+
+export type ExcelImportPreview = {
+  valid: number
+  failed: number
+  rows: {
+    row: number
+    question: { code: string; text: string; category: string; type: string } | null
+    errors: string[]
+  }[]
 }
 
 export class ApiError extends Error {
@@ -25,13 +45,15 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response
 
   try {
+    const headers = new Headers(init?.headers)
+    if (!(init?.body instanceof FormData)) {
+      headers.set("Content-Type", "application/json")
+    }
+
     response = await fetch(`${API_BASE_URL}${path}`, {
       ...init,
       credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        ...init?.headers,
-      },
+      headers,
     })
   } catch {
     throw new ApiError(0, "Tidak dapat terhubung ke server. Coba lagi.")
@@ -79,4 +101,24 @@ export function logout() {
 
 export function getCurrentUser() {
   return request<User>("/users/me")
+}
+
+export function importQuestions(file: File) {
+  const formData = new FormData()
+  formData.append("file", file)
+
+  return request<ExcelImportResult>("/questions/import", {
+    method: "POST",
+    body: formData,
+  })
+}
+
+export function previewQuestionsImport(file: File) {
+  const formData = new FormData()
+  formData.append("file", file)
+
+  return request<ExcelImportPreview>("/questions/import/preview", {
+    method: "POST",
+    body: formData,
+  })
 }

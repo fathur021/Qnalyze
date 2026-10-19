@@ -11,6 +11,18 @@ export type ImportQuestionsResult = {
   data: Question[];
 };
 
+export type ImportPreviewRow = {
+  row: number;
+  question: Pick<ParsedQuestion, "code" | "text" | "category" | "type"> | null;
+  errors: string[];
+};
+
+export type ImportPreviewResult = {
+  valid: number;
+  failed: number;
+  rows: ImportPreviewRow[];
+};
+
 /** Konteks validasi satu baris: data referensi + kode yang sudah dilihat. */
 type ImportValidationContext = {
   categoryIds: Map<string, number>;
@@ -47,6 +59,54 @@ export async function importQuestions(buffer: Buffer): Promise<ImportQuestionsRe
   const data = await insertMany(questionsToInsert);
 
   return { imported: data.length, failed: errors.length, errors, data };
+}
+
+/** Parse and validate an import file without persisting its questions. */
+export async function previewQuestions(buffer: Buffer): Promise<ImportPreviewResult> {
+  const workbook = parseQuestionsWorkbook(buffer);
+  const categoryNames = uniqueCategoryNames(workbook.data);
+  const codes = workbook.data.map(({ question }) => question.code);
+  const { categoryIds, existingCodes } = await findImportContext(categoryNames, codes);
+  const context: ImportValidationContext = {
+    categoryIds,
+    existingCodes,
+    seenCodes: new Set<string>(),
+  };
+  const errorsByRow = new Map<number, string[]>();
+
+  for (const error of workbook.errors) addRowError(errorsByRow, error.row, error.message);
+
+  const rows: ImportPreviewRow[] = workbook.data.map(({ row, question }) => {
+    const validation = validateRow(question, context);
+    if (!validation.ok) {
+      for (const message of validation.messages) addRowError(errorsByRow, row, message);
+    }
+    return {
+      row,
+      question: {
+        code: question.code,
+        text: question.text,
+        category: question.category,
+        type: question.type,
+      },
+      errors: errorsByRow.get(row) ?? [],
+    };
+  });
+
+  const knownRows = new Set(rows.map(({ row }) => row));
+  for (const [row, errors] of errorsByRow) {
+    if (!knownRows.has(row)) rows.push({ row, question: null, errors });
+  }
+  rows.sort((first, second) => first.row - second.row);
+
+  const failed = rows.filter(({ errors }) => errors.length > 0).length;
+  return { valid: rows.length - failed, failed, rows };
+}
+
+function addRowError(errorsByRow: Map<number, string[]>, row: number, message: string): void {
+  const errors = errorsByRow.get(row) ?? [];
+  errors.push(message);
+  errorsByRow.set(row, errors);
 }
 
 /** Nama kategori unik dari seluruh soal hasil parsing. */
