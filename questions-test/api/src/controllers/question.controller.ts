@@ -39,11 +39,15 @@ export async function previewExcelImport(req: Request, res: Response): Promise<v
   const file = req.file;
 
   if (!file) {
-    res.status(HttpStatus.BAD_REQUEST).json({ message: "File Excel wajib diunggah pada field 'file'" });
+    res
+      .status(HttpStatus.BAD_REQUEST)
+      .json({ message: "File Excel wajib diunggah pada field 'file'" });
     return;
   }
   if (!ALLOWED_EXTENSIONS.includes(extname(file.originalname).toLowerCase())) {
-    res.status(HttpStatus.BAD_REQUEST).json({ message: "Berkas harus berekstensi .xlsx, .xls, atau .csv" });
+    res
+      .status(HttpStatus.BAD_REQUEST)
+      .json({ message: "Berkas harus berekstensi .xlsx, .xls, atau .csv" });
     return;
   }
 
