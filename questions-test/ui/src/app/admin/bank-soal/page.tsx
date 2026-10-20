@@ -99,18 +99,24 @@ export default function BankSoalPage() {
   const [selected, setSelected] = useState<string[]>([])
 
   const refresh = async () => {
-    try {
-      const [categoryRows, result] = await Promise.all([
-        getCategories(),
-        getQuestions({ page: 1, limit: 100 }),
-      ])
-      setCategories(categoryRows)
-      setQuestions(result.data.map(toAdminQuestion))
-    } catch (error) {
-      toast.error(error instanceof ApiError ? error.message : "Gagal memuat bank soal.")
-    } finally {
-      setLoading(false)
+    const [categoryResult, questionResult] = await Promise.allSettled([
+      getCategories(),
+      getQuestions({ page: 1, limit: 100 }),
+    ])
+
+    if (categoryResult.status === "fulfilled") {
+      setCategories(categoryResult.value)
+    } else {
+      toast.error(categoryResult.reason instanceof ApiError ? categoryResult.reason.message : "Gagal memuat kategori.")
     }
+
+    if (questionResult.status === "fulfilled") {
+      setQuestions(questionResult.value.data.map(toAdminQuestion))
+    } else {
+      toast.error(questionResult.reason instanceof ApiError ? questionResult.reason.message : "Gagal memuat bank soal.")
+    }
+
+    setLoading(false)
   }
 
   useEffect(() => { void refresh() }, [])
@@ -130,7 +136,7 @@ export default function BankSoalPage() {
         matchesQuery && matchesCategory && matchesDifficulty && matchesStatus
       )
     })
-  }, [query, category, difficulty, status])
+  }, [questions, query, category, difficulty, status])
 
   const allSelected =
     filtered.length > 0 && filtered.every((q) => selected.includes(q.id))
