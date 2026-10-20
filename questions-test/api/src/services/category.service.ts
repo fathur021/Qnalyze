@@ -5,6 +5,7 @@ import {
   create as createCategoryRow,
   findById,
   list as listCategoryRows,
+  listPublic as listPublicCategoryRows,
   remove,
   update as updateCategoryRow,
 } from "../repositories/category.repository.js";
@@ -33,6 +34,11 @@ export class CategoryConflictError extends Error {
 /** Daftar semua kategori beserta jumlah soalnya. */
 export async function listCategories(): Promise<Category[]> {
   return listCategoryRows();
+}
+
+/** Daftar kategori yang memiliki soal terbit untuk katalog publik. */
+export async function listPublicCategories(): Promise<Category[]> {
+  return listPublicCategoryRows();
 }
 
 /** Buat kategori baru. */

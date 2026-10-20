@@ -8,6 +8,7 @@ import {
   importQuestions,
   listQuestions,
   previewQuestions,
+  updateQuestion,
   QuestionValidationError,
 } from "../services/question.service.js";
 import { ExcelParseError } from "../utils/excel.js";
@@ -59,6 +60,23 @@ export async function list(req: Request, res: Response): Promise<void> {
   res.status(HttpStatus.OK).json(result);
 }
 
+export async function listPublic(req: Request, res: Response): Promise<void> {
+  const categoryId = req.query.categoryId ? Number(req.query.categoryId) : undefined;
+  const filters: Parameters<typeof listQuestions>[0] = {
+    page: req.query.page ? Number(req.query.page) : 1,
+    limit: req.query.limit ? Number(req.query.limit) : 100,
+    status: "Terbit",
+  };
+  if (categoryId !== undefined) filters.categoryId = categoryId;
+  const result = await listQuestions(filters);
+  res.status(HttpStatus.OK).json({
+    ...result,
+    data: result.data.map(
+      ({ answer: _answer, explanation: _explanation, ...question }) => question,
+    ),
+  });
+}
+
 export async function getById(req: Request, res: Response): Promise<void> {
   const id = Number(req.params.id);
   const question = await getQuestion(id);
@@ -73,6 +91,23 @@ export async function create(req: Request, res: Response): Promise<void> {
   try {
     const question = await createQuestion(req.body);
     res.status(HttpStatus.CREATED).json(question);
+  } catch (error) {
+    if (error instanceof QuestionValidationError) {
+      res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
+      return;
+    }
+    throw error;
+  }
+}
+
+export async function update(req: Request, res: Response): Promise<void> {
+  try {
+    const question = await updateQuestion(Number(req.params.id), req.body);
+    if (!question) {
+      res.status(HttpStatus.NOT_FOUND).json({ message: "Resource tidak ditemukan" });
+      return;
+    }
+    res.status(HttpStatus.OK).json(question);
   } catch (error) {
     if (error instanceof QuestionValidationError) {
       res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });

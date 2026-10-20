@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import {
   ChevronLeft,
@@ -43,12 +43,12 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import {
-  categories,
-  categoryName,
-  questions,
+  type Question,
   type Difficulty,
   type QuestionStatus,
 } from "@/lib/mock-data"
+import { ApiError, deleteQuestion, duplicateQuestion, getCategories, getQuestion, getQuestions, updateQuestion, type ApiCategory, type ApiQuestion } from "@/lib/api"
+import { toast } from "sonner"
 import { cn } from "cn"
 
 const difficultyStyles: Record<Difficulty, string> = {
@@ -62,10 +62,18 @@ const statusStyles: Record<QuestionStatus, string> = {
   Draf: "bg-muted text-muted-foreground",
 }
 
-const categoryFilterItems = [
-  { value: "all", label: "Semua Kategori" },
-  ...categories.map((c) => ({ value: c.id, label: c.name })),
-]
+function toAdminQuestion(question: ApiQuestion): Question {
+  return {
+    ...question,
+    id: String(question.id),
+    categoryId: String(question.categoryId),
+    explanation: question.explanation ?? "",
+    answer: question.answer ?? "",
+    updatedAt: question.updatedAt
+      ? new Date(question.updatedAt).toLocaleDateString("id-ID")
+      : "—",
+  }
+}
 
 const difficultyFilterItems = [
   { value: "all", label: "Semua Tingkat" },
@@ -81,11 +89,31 @@ const statusFilterItems = [
 ]
 
 export default function BankSoalPage() {
+  const [categories, setCategories] = useState<ApiCategory[]>([])
+  const [questions, setQuestions] = useState<Question[]>([])
+  const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState("")
   const [category, setCategory] = useState("all")
   const [difficulty, setDifficulty] = useState("all")
   const [status, setStatus] = useState("all")
   const [selected, setSelected] = useState<string[]>([])
+
+  const refresh = async () => {
+    try {
+      const [categoryRows, result] = await Promise.all([
+        getCategories(),
+        getQuestions({ page: 1, limit: 100 }),
+      ])
+      setCategories(categoryRows)
+      setQuestions(result.data.map(toAdminQuestion))
+    } catch (error) {
+      toast.error(error instanceof ApiError ? error.message : "Gagal memuat bank soal.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { void refresh() }, [])
 
   const filtered = useMemo(() => {
     return questions.filter((q) => {
@@ -117,6 +145,55 @@ export default function BankSoalPage() {
       checked ? [...prev, id] : prev.filter((item) => item !== id)
     )
   }
+
+  const removeQuestion = async (id: string) => {
+    try {
+      await deleteQuestion(id)
+      toast.success("Soal berhasil dihapus.")
+      await refresh()
+    } catch (error) {
+      toast.error(error instanceof ApiError ? error.message : "Gagal menghapus soal.")
+    }
+  }
+
+  const duplicate = async (id: string) => {
+    try {
+      await duplicateQuestion(id)
+      toast.success("Soal berhasil diduplikasi.")
+      await refresh()
+    } catch (error) {
+      toast.error(error instanceof ApiError ? error.message : "Gagal menduplikasi soal.")
+    }
+  }
+
+  const deleteSelected = async () => {
+    try {
+      await Promise.all(selected.map((id) => deleteQuestion(id)))
+      setSelected([])
+      toast.success("Soal terpilih berhasil dihapus.")
+      await refresh()
+    } catch (error) {
+      toast.error(error instanceof ApiError ? error.message : "Gagal menghapus soal terpilih.")
+    }
+  }
+
+  const publishSelected = async () => {
+    try {
+      const selectedQuestions = await Promise.all(selected.map((id) => getQuestion(id)))
+      await Promise.all(selectedQuestions.map((item) => updateQuestion(item.id, { ...item, status: "Terbit" })))
+      setSelected([])
+      toast.success("Soal terpilih berhasil diterbitkan.")
+      await refresh()
+    } catch (error) {
+      toast.error(error instanceof ApiError ? error.message : "Gagal menerbitkan soal terpilih.")
+    }
+  }
+
+  const categoryName = (id: string) => categories.find((item) => String(item.id) === id)?.name ?? "Tanpa Kategori"
+  const categoryFilterItems = [
+    { value: "all", label: "Semua Kategori" },
+    ...categories.map((item) => ({ value: String(item.id), label: item.name })),
+  ]
 
   return (
     <div className="space-y-5">
@@ -161,9 +238,9 @@ export default function BankSoalPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Semua Kategori</SelectItem>
-                  {categories.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.name}
+                  {categories.map((item) => (
+                    <SelectItem key={item.id} value={String(item.id)}>
+                      {item.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -208,13 +285,13 @@ export default function BankSoalPage() {
                 {selected.length} soal dipilih
               </span>
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" onClick={() => void publishSelected()}>
                   Terbitkan
                 </Button>
                 <Button
                   variant="destructive"
                   size="sm"
-                  onClick={() => setSelected([])}
+                  onClick={() => void deleteSelected()}
                 >
                   <Trash2 />
                   Hapus
@@ -312,12 +389,12 @@ export default function BankSoalPage() {
                             <Pencil />
                             Edit
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => duplicate(q.id)}>
                             <Copy />
                             Duplikat
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem variant="destructive">
+                          <DropdownMenuItem variant="destructive" onClick={() => removeQuestion(q.id)}>
                             <Trash2 />
                             Hapus
                           </DropdownMenuItem>
@@ -332,7 +409,7 @@ export default function BankSoalPage() {
                       colSpan={7}
                       className="py-10 text-center text-muted-foreground"
                     >
-                      Tidak ada soal yang cocok dengan filter.
+                      {loading ? "Memuat bank soal..." : "Tidak ada soal yang cocok dengan filter."}
                     </TableCell>
                   </TableRow>
                 ) : null}

@@ -1,24 +1,44 @@
-import { notFound } from "next/navigation"
+"use client"
+
+import { useEffect, useState } from "react"
+import { useParams } from "next/navigation"
+import { toast } from "sonner"
 
 import { PageHeader } from "@/components/admin/page-header"
 import { QuestionForm } from "@/components/admin/question-form"
-import { questions } from "@/lib/mock-data"
+import { ApiError, getQuestion, type ApiQuestion } from "@/lib/api"
+import type { Question } from "@/lib/mock-data"
 
-export default async function EditSoalPage({
-  params,
-}: PageProps<"/admin/bank-soal/[id]">) {
-  const { id } = await params
-  const question = questions.find((q) => q.id === id)
+function toQuestion(question: ApiQuestion): Question {
+  return {
+    ...question,
+    id: String(question.id),
+    categoryId: String(question.categoryId),
+    answer: question.answer ?? "",
+    explanation: question.explanation ?? "",
+    updatedAt: question.updatedAt ?? "",
+  }
+}
 
-  if (!question) notFound()
+export default function EditSoalPage() {
+  const params = useParams<{ id: string }>()
+  const [question, setQuestion] = useState<Question | null>(null)
+
+  useEffect(() => {
+    getQuestion(params.id)
+      .then((result) => setQuestion(toQuestion(result)))
+      .catch((error: unknown) => {
+        toast.error(error instanceof ApiError ? error.message : "Gagal memuat soal.")
+      })
+  }, [params.id])
 
   return (
     <div className="space-y-5">
       <PageHeader
         title="Edit Soal"
-        description={`Perbarui soal ${question.code}.`}
+        description={question ? `Perbarui soal ${question.code}.` : "Memuat data soal..."}
       />
-      <QuestionForm mode="edit" question={question} />
+      {question ? <QuestionForm mode="edit" question={question} /> : null}
     </div>
   )
 }

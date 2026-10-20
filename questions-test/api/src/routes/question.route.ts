@@ -9,8 +9,10 @@ import {
   getById as getQuestionByIdController,
   importExcel,
   list as listQuestionsController,
+  listPublic as listPublicQuestionsController,
   previewExcelImport,
   remove as removeQuestionController,
+  update as updateQuestionController,
 } from "../controllers/question.controller.js";
 import { requireAdmin, requireAuth } from "../middlewares/auth.js";
 import { validate } from "../middlewares/validate.js";
@@ -44,8 +46,18 @@ function handleUpload(req: Request, res: Response, next: NextFunction): void {
 }
 
 questionRouter.get(
+  "/public",
+  query("page").optional().isInt({ min: 1 }).withMessage("Halaman tidak valid"),
+  query("limit").optional().isInt({ min: 1, max: 100 }).withMessage("Limit tidak valid"),
+  query("categoryId").optional().isInt({ min: 1 }).withMessage("Kategori tidak valid"),
+  validate,
+  listPublicQuestionsController,
+);
+
+questionRouter.get(
   "/",
   requireAuth,
+  requireAdmin,
   query("page").optional().isInt({ min: 1 }).withMessage("Halaman tidak valid"),
   query("limit").optional().isInt({ min: 1, max: 100 }).withMessage("Limit tidak valid"),
   query("search").optional().isString().withMessage("Pencarian harus berupa teks"),
@@ -65,6 +77,7 @@ questionRouter.get(
 questionRouter.get(
   "/:id",
   requireAuth,
+  requireAdmin,
   param("id").isInt({ min: 1 }).withMessage("ID soal tidak valid"),
   validate,
   getQuestionByIdController,
@@ -73,6 +86,7 @@ questionRouter.get(
 questionRouter.post(
   "/",
   requireAuth,
+  requireAdmin,
   body("code")
     .isString()
     .withMessage("Kode harus berupa teks")
@@ -116,9 +130,37 @@ questionRouter.post(
 questionRouter.delete(
   "/:id",
   requireAuth,
+  requireAdmin,
   param("id").isInt({ min: 1 }).withMessage("ID soal tidak valid"),
   validate,
   removeQuestionController,
+);
+
+questionRouter.put(
+  "/:id",
+  requireAuth,
+  requireAdmin,
+  param("id").isInt({ min: 1 }).withMessage("ID soal tidak valid"),
+  body("code").isString().trim().notEmpty().withMessage("Kode wajib diisi"),
+  body("text").isString().trim().notEmpty().withMessage("Pertanyaan wajib diisi"),
+  body("categoryId").isInt({ min: 1 }).withMessage("Kategori tidak valid"),
+  body("type")
+    .isIn([...QUESTION_TYPES])
+    .withMessage("Tipe soal tidak valid"),
+  body("difficulty")
+    .isIn([...DIFFICULTIES])
+    .withMessage("Tingkat kesulitan tidak valid"),
+  body("status")
+    .optional()
+    .isIn([...STATUSES])
+    .withMessage("Status tidak valid"),
+  body("options").isArray().withMessage("Opsi harus berupa array"),
+  body("options.*.key").isString(),
+  body("options.*.text").isString(),
+  body("answer").isString().trim().notEmpty().withMessage("Jawaban wajib diisi"),
+  body("explanation").optional({ nullable: true }).isString(),
+  validate,
+  updateQuestionController,
 );
 
 questionRouter.post(

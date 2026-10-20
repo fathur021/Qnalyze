@@ -3,6 +3,7 @@
 import { CheckCircle2, Lightbulb, XCircle } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
 import type { QuizQuestion } from "@/lib/portal-data"
 import { cn } from "cn"
 
@@ -19,13 +20,13 @@ function OptionRow({
   selected: boolean
   correct: boolean
 }) {
-  const state = !selected
+  const state = mode === "review" && correct
+    ? "correct"
+    : !selected
     ? "idle"
     : mode === "answering"
       ? "selected"
-      : correct
-        ? "correct"
-        : "wrong"
+      : "wrong"
 
   return (
     <div
@@ -114,6 +115,20 @@ export function QuestionCard({
 
       <fieldset className="space-y-2">
         <legend className="sr-only">Pilihan jawaban</legend>
+        {question.options.length === 0 && interactive ? (
+          <Input
+            value={value ?? ""}
+            onChange={(event) => onSelect?.(event.target.value)}
+            placeholder="Ketik jawabanmu..."
+            aria-label="Jawaban singkat"
+          />
+        ) : null}
+        {question.options.length === 0 && !interactive ? (
+          <div className="space-y-2 rounded-lg border border-border bg-muted/40 p-3 text-sm">
+            <p>Jawabanmu: <span className="font-medium text-foreground">{value || "Belum dijawab"}</span></p>
+            <p>Kunci jawaban: <span className="font-medium text-foreground">{question.answer}</span></p>
+          </div>
+        ) : null}
         {question.options.map((option) => {
           const selected = value === option.key
           const correct = question.answer === option.key

@@ -4,6 +4,54 @@ export type User = {
   email: string
   createdAt: string
 }
+
+export type ApiCategory = {
+  id: number
+  name: string
+  description: string | null
+  tone: string
+  questionCount: number
+}
+
+export type ApiQuestion = {
+  id: number
+  code: string
+  categoryId: number
+  text: string
+  type: "Pilihan Ganda" | "Benar/Salah" | "Isian Singkat"
+  difficulty: "Mudah" | "Sedang" | "Sulit"
+  status: "Terbit" | "Draf"
+  options: { key: string; text: string }[]
+  answer?: string
+  explanation?: string | null
+  updatedAt?: string
+}
+
+export type QuestionInput = Omit<ApiQuestion, "id" | "updatedAt">
+
+export type AttemptQuestion = {
+  id: number
+  number: number
+  topic: string
+  difficulty: "Mudah" | "Sedang" | "Sulit"
+  prompt: string
+  options: { key: string; text: string }[]
+  answer?: string
+  explanation?: string | null
+}
+
+export type Attempt = {
+  id: number
+  categoryId: number
+  title: string
+  packageLabel: string | null
+  durationLimitMinutes: number
+  status: "Berlangsung" | "Selesai"
+  score: number | null
+  correct: number | null
+  total: number
+  questions: AttemptQuestion[]
+}
 export type AuthResponse = {
   user: User
 }
@@ -120,5 +168,74 @@ export function previewQuestionsImport(file: File) {
   return request<ExcelImportPreview>("/questions/import/preview", {
     method: "POST",
     body: formData,
+  })
+}
+
+export async function getCategories(publicOnly = false) {
+  const result = await request<{ data: ApiCategory[] }>(
+    publicOnly ? "/categories/public" : "/categories"
+  )
+  return result.data
+}
+
+export async function getQuestions(params: {
+  page?: number
+  limit?: number
+  status?: string
+} = {}) {
+  const search = new URLSearchParams()
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined) search.set(key, String(value))
+  }
+  return request<{ data: ApiQuestion[]; total: number }>(`/questions?${search}`)
+}
+
+export function getQuestion(id: string | number) {
+  return request<ApiQuestion>(`/questions/${id}`)
+}
+
+export function createQuestion(input: QuestionInput) {
+  return request<ApiQuestion>("/questions", {
+    method: "POST",
+    body: JSON.stringify(input),
+  })
+}
+
+export function updateQuestion(id: string | number, input: QuestionInput) {
+  return request<ApiQuestion>(`/questions/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(input),
+  })
+}
+
+export function deleteQuestion(id: string | number) {
+  return request<void>(`/questions/${id}`, { method: "DELETE" })
+}
+
+export function duplicateQuestion(id: string | number) {
+  return request<ApiQuestion>(`/questions/${id}/duplicate`, { method: "POST" })
+}
+
+export function getPublicQuestions(categoryId: number) {
+  return request<{ data: Omit<ApiQuestion, "answer" | "explanation">[] }>(
+    `/questions/public?categoryId=${categoryId}&limit=100`
+  )
+}
+
+export function startAttempt(categoryId: number) {
+  return request<Attempt>("/attempts", {
+    method: "POST",
+    body: JSON.stringify({ categoryId }),
+  })
+}
+
+export function getAttempt(id: number) {
+  return request<Attempt>(`/attempts/${id}`)
+}
+
+export function submitAttempt(id: number, answers: { questionId: number; answer: string }[]) {
+  return request<Attempt>(`/attempts/${id}/answers`, {
+    method: "POST",
+    body: JSON.stringify({ answers }),
   })
 }

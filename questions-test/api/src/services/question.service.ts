@@ -8,6 +8,7 @@ import {
   list as listQuestionsRepository,
   type QuestionListFilters,
   remove as removeQuestionRow,
+  update as updateQuestionRow,
 } from "../repositories/question.repository.js";
 import type { ExcelImportError, ParsedEntry, ParsedQuestion } from "../types/question.js";
 import { parseQuestionsWorkbook } from "../utils/excel.js";
@@ -245,6 +246,28 @@ export async function createQuestion(input: CreateQuestionInput): Promise<Questi
   });
 
   return row;
+}
+
+/** Perbarui soal yang sudah ada. */
+export async function updateQuestion(
+  id: number,
+  input: CreateQuestionInput,
+): Promise<Question | null> {
+  const category = await findCategoryById(input.categoryId);
+  if (!category) throw new QuestionValidationError("Kategori tidak ditemukan");
+
+  const row = await updateQuestionRow(id, {
+    code: input.code.trim(),
+    text: input.text.trim(),
+    categoryId: input.categoryId,
+    type: input.type,
+    difficulty: input.difficulty,
+    status: input.status ?? "Draf",
+    options: input.options,
+    answer: input.answer.trim(),
+    explanation: input.explanation ?? null,
+  });
+  return row ?? null;
 }
 
 /** Bentuk data insert dari satu soal hasil parsing. */

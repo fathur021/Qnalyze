@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { CircleAlert, Plus, Save, Trash2 } from "lucide-react"
@@ -27,13 +27,13 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
 import {
-  categories,
   type Difficulty,
   type Question,
   type QuestionOption,
   type QuestionStatus,
   type QuestionType,
 } from "@/lib/mock-data"
+import { ApiError, createQuestion, getCategories, updateQuestion, type ApiCategory } from "@/lib/api"
 
 const questionTypes: QuestionType[] = [
   "Pilihan Ganda",
@@ -50,7 +50,6 @@ const difficultyItems = difficulties.map((item) => ({
   value: item,
   label: item,
 }))
-const categoryItems = categories.map((c) => ({ value: c.id, label: c.name }))
 const statusItems = [
   { value: "Draf", label: "Draf" },
   { value: "Terbit", label: "Terbit" },
@@ -93,6 +92,9 @@ export function QuestionForm({
   const initialType = question?.type ?? "Pilihan Ganda"
 
   const [type, setType] = useState<QuestionType>(initialType)
+  const [code, setCode] = useState(question?.code ?? "")
+  const [categories, setCategories] = useState<ApiCategory[]>([])
+  const [saving, setSaving] = useState(false)
   const [text, setText] = useState(question?.text ?? "")
   const [options, setOptions] = useState<QuestionOption[]>(
     question?.options.length
@@ -112,6 +114,12 @@ export function QuestionForm({
   const [status, setStatus] = useState<QuestionStatus>(
     question?.status ?? "Draf"
   )
+
+  useEffect(() => {
+    getCategories().then(setCategories).catch((error: unknown) => {
+      toast.error(error instanceof ApiError ? error.message : "Gagal memuat kategori.")
+    })
+  }, [])
 
   const handleTypeChange = (next: QuestionType) => {
     setType(next)
@@ -136,18 +144,38 @@ export function QuestionForm({
     if (answer === key) setAnswer("")
   }
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
     if (!text.trim() || !categoryId) {
       toast.error("Lengkapi pertanyaan dan kategori terlebih dahulu.")
       return
     }
-    toast.success(
-      mode === "create"
-        ? "Soal baru berhasil disimpan."
-        : "Perubahan soal berhasil disimpan."
-    )
-    router.push("/admin/bank-soal")
+    if (!code.trim() || (type !== "Isian Singkat" && options.some((option) => !option.text.trim()))) {
+      toast.error("Lengkapi kode dan semua opsi jawaban.")
+      return
+    }
+    setSaving(true)
+    try {
+      const input = {
+        code: code.trim(),
+        text: text.trim(),
+        categoryId: Number(categoryId),
+        type,
+        difficulty,
+        status,
+        options,
+        answer: answer.trim(),
+        explanation: explanation.trim() || null,
+      }
+      if (mode === "edit" && question) await updateQuestion(question.id, input)
+      else await createQuestion(input)
+      toast.success(mode === "create" ? "Soal berhasil disimpan." : "Soal berhasil diperbarui.")
+      router.push("/admin/bank-soal")
+    } catch (error) {
+      toast.error(error instanceof ApiError ? error.message : "Gagal menyimpan soal.")
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -164,6 +192,15 @@ export function QuestionForm({
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="question-code">Kode Soal</Label>
+              <Input
+                id="question-code"
+                value={code}
+                onChange={(event) => setCode(event.target.value)}
+                placeholder="Contoh: LOG-001"
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="question-text">Pertanyaan</Label>
               <Textarea
@@ -296,7 +333,7 @@ export function QuestionForm({
             <div className="space-y-2">
               <Label>Kategori</Label>
               <Select
-                items={categoryItems}
+                items={categories.map((category) => ({ value: String(category.id), label: category.name }))}
                 value={categoryId}
                 onValueChange={(value) => setCategoryId(value as string)}
               >
@@ -304,9 +341,9 @@ export function QuestionForm({
                   <SelectValue placeholder="Pilih kategori" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.name}
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={String(category.id)}>
+                      {category.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -361,9 +398,9 @@ export function QuestionForm({
         </Card>
 
         <div className="flex gap-2">
-          <Button type="submit" className="flex-1">
+          <Button type="submit" className="flex-1" disabled={saving}>
             <Save />
-            {mode === "create" ? "Simpan Soal" : "Simpan Perubahan"}
+            {saving ? "Menyimpan..." : mode === "create" ? "Simpan Soal" : "Simpan Perubahan"}
           </Button>
           <Button
             type="button"

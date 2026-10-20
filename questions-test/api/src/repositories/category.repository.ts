@@ -1,4 +1,4 @@
-import { eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { db, type Executor } from "../db/index.js";
 import { categories, questions } from "../db/schema.js";
 
@@ -24,6 +24,28 @@ export async function list(executor: Executor = db): Promise<CategoryWithCount[]
     .groupBy(categories.id)
     .orderBy(categories.id);
 
+  return rows as CategoryWithCount[];
+}
+
+/** Kategorien für den öffentlichen Katalog mit Anzahl veröffentlichter Fragen. */
+export async function listPublic(executor: Executor = db): Promise<CategoryWithCount[]> {
+  const rows = await executor
+    .select({
+      id: categories.id,
+      name: categories.name,
+      description: categories.description,
+      tone: categories.tone,
+      createdAt: categories.createdAt,
+      questionCount: sql<number>`cast(count(${questions.id}) as integer)`,
+    })
+    .from(categories)
+    .leftJoin(
+      questions,
+      and(eq(questions.categoryId, categories.id), eq(questions.status, "Terbit")),
+    )
+    .groupBy(categories.id)
+    .having(sql`count(${questions.id}) > 0`)
+    .orderBy(categories.id);
   return rows as CategoryWithCount[];
 }
 

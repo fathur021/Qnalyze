@@ -4,12 +4,18 @@ import {
   createCategory,
   deleteCategory,
   listCategories,
+  listPublicCategories,
   updateCategory,
 } from "../services/category.service.js";
 import { HttpStatus } from "../utils/http-status.js";
 
 export async function list(_req: Request, res: Response): Promise<void> {
   const data = await listCategories();
+  res.status(HttpStatus.OK).json({ data });
+}
+
+export async function listPublic(_req: Request, res: Response): Promise<void> {
+  const data = await listPublicCategories();
   res.status(HttpStatus.OK).json({ data });
 }
 
