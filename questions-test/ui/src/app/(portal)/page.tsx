@@ -1,27 +1,19 @@
-import Link from "next/link"
-import {
-  ArrowRight,
-  CheckCircle2,
-  Flame,
-  Gauge,
-  Target,
-  TrendingUp,
-} from "lucide-react"
+import { CheckCircle2, Flame, Gauge, Target, TrendingUp } from "lucide-react";
 
-import { CategoryCard } from "@/components/portal/category-card"
-import { UserGreeting } from "@/components/portal/user-greeting"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { categories } from "@/lib/mock-data"
-import { portalDashboard } from "@/lib/portal-data"
-import { portalUser } from "@/lib/portal-user"
+import { FeaturedCategories } from "@/components/portal/featured-categories";
+import { UserGreeting } from "@/components/portal/user-greeting";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { portalDashboard } from "@/lib/portal-data";
+import { portalUser } from "@/lib/portal-user";
 
 export default function BerandaPage() {
-  const { targetWeekly, metrics } = portalDashboard
-  const weeklyPercent = Math.round((targetWeekly.done / targetWeekly.total) * 100)
-  const featured = categories.slice(0, 4)
-  const accuracyWrongPercent = 100 - metrics.accuracy
+  const { targetWeekly, metrics } = portalDashboard;
+  const weeklyPercent = Math.round(
+    (targetWeekly.done / targetWeekly.total) * 100,
+  );
+  const accuracyWrongPercent = 100 - metrics.accuracy;
 
   return (
     <div className="space-y-8">
@@ -176,35 +168,7 @@ export default function BerandaPage() {
         </Card>
       </section>
 
-      {/* Categories */}
-      <section className="space-y-4">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="font-heading text-lg font-semibold tracking-tight text-foreground">
-              Pilih Kategori Latihan
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Modul terstruktur dengan bank soal teruji dan kunci pembahasan
-              mendalam.
-            </p>
-          </div>
-          <Link
-            href="/latihan"
-            className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-          >
-            Lihat Semua Kategori
-            <ArrowRight className="size-4" />
-          </Link>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {featured.map((category) => (
-            <CategoryCard
-              key={category.id}
-              category={category}
-            />
-          ))}
-        </div>
-      </section>
+      <FeaturedCategories />
     </div>
-  )
+  );
 }

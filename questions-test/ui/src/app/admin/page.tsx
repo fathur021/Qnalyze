@@ -1,34 +1,37 @@
-import { BookOpen, ClipboardCheck, Tags, Users } from "lucide-react"
+"use client";
 
-import { PageHeader } from "@/components/admin/page-header"
-import { StatCard } from "@/components/admin/stat-card"
+import { useEffect, useMemo, useState } from "react";
+import { BookOpen, ClipboardCheck, Tags, Users } from "lucide-react";
+import { toast } from "sonner";
+
+import { PageHeader } from "@/components/admin/page-header";
+import { StatCard } from "@/components/admin/stat-card";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
+} from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import {
   dashboardStats,
   recentActivity,
   scoreDistribution,
-  topCategories,
   weeklyActivity,
-  categoryName,
   toneClasses,
-} from "@/lib/mock-data"
+} from "@/lib/mock-data";
+import { ApiError, getCategories, type ApiCategory } from "@/lib/api";
 
-const statIcons = [BookOpen, Tags, Users, ClipboardCheck] as const
+const statIcons = [BookOpen, Tags, Users, ClipboardCheck] as const;
 const statTints = [
   "bg-primary/10 text-primary",
   "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
   "bg-sky-500/10 text-sky-600 dark:text-sky-400",
   "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-] as const
+] as const;
 
 const initials = (name: string) =>
   name
@@ -36,11 +39,34 @@ const initials = (name: string) =>
     .slice(0, 2)
     .map((part) => part[0])
     .join("")
-    .toUpperCase()
+    .toUpperCase();
 
 export default function AdminDashboardPage() {
-  const maxActivity = Math.max(...weeklyActivity.map((d) => d.value))
-  const maxScore = Math.max(...scoreDistribution.map((d) => d.value))
+  const [categories, setCategories] = useState<ApiCategory[]>([]);
+
+  useEffect(() => {
+    getCategories()
+      .then(setCategories)
+      .catch((error: unknown) =>
+        toast.error(
+          error instanceof ApiError ? error.message : "Gagal memuat kategori.",
+        ),
+      );
+  }, []);
+
+  const maxActivity = Math.max(...weeklyActivity.map((d) => d.value));
+  const maxScore = Math.max(...scoreDistribution.map((d) => d.value));
+  const categoriesByQuestionCount = useMemo(
+    () =>
+      [...categories]
+        .sort((first, second) => second.questionCount - first.questionCount)
+        .slice(0, 5),
+    [categories],
+  );
+  const maxQuestionCount = Math.max(
+    1,
+    ...categoriesByQuestionCount.map(({ questionCount }) => questionCount),
+  );
 
   return (
     <div className="space-y-6">
@@ -54,8 +80,10 @@ export default function AdminDashboardPage() {
           <StatCard
             key={stat.key}
             label={stat.label}
-            value={stat.value}
-            delta={stat.delta}
+            value={
+              stat.key === "categories" ? String(categories.length) : stat.value
+            }
+            delta={stat.key === "categories" ? undefined : stat.delta}
             trend={stat.trend}
             icon={statIcons[index]}
             tint={statTints[index]}
@@ -131,7 +159,7 @@ export default function AdminDashboardPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {recentActivity.map((item) => {
-              const tone = toneClasses[item.tone]
+              const tone = toneClasses[item.tone];
               return (
                 <div key={item.id} className="flex items-start gap-3">
                   <Avatar size="sm" className="mt-0.5">
@@ -149,50 +177,57 @@ export default function AdminDashboardPage() {
                       </span>{" "}
                       <span className="font-medium">{item.target}</span>
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      {item.time}
-                    </p>
+                    <p className="text-xs text-muted-foreground">{item.time}</p>
                   </div>
                 </div>
-              )
+              );
             })}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Kategori Terpopuler</CardTitle>
+            <CardTitle>Kategori dengan Soal Terbanyak</CardTitle>
             <CardDescription>
-              Berdasarkan jumlah pengerjaan dan nilai rata-rata.
+              Berdasarkan jumlah soal yang tersimpan di bank soal.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {topCategories.map((item, index) => (
-              <div key={item.categoryId} className="flex items-center gap-3">
+            {categoriesByQuestionCount.map((category, index) => (
+              <div key={category.id} className="flex items-center gap-3">
                 <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-muted text-xs font-semibold text-muted-foreground">
                   {index + 1}
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
                     <span className="truncate text-sm font-medium text-foreground">
-                      {categoryName(item.categoryId)}
+                      {category.name}
                     </span>
                     <span className="text-xs tabular-nums text-muted-foreground">
-                      {item.attempts} pengerjaan
+                      {category.questionCount} soal
                     </span>
                   </div>
                   <div className="mt-1.5">
-                    <Progress value={item.average} />
+                    <Progress
+                      value={(category.questionCount / maxQuestionCount) * 100}
+                    />
                   </div>
                 </div>
                 <Badge variant="secondary" className="tabular-nums">
-                  {item.average}
+                  {category.questionCount}
                 </Badge>
               </div>
             ))}
+            {categories.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                {categories.length === 0
+                  ? "Belum ada kategori."
+                  : "Memuat kategori..."}
+              </p>
+            ) : null}
           </CardContent>
         </Card>
       </div>
     </div>
-  )
+  );
 }
