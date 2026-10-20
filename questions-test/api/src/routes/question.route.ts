@@ -144,9 +144,16 @@ questionRouter.put(
   body("code").isString().trim().notEmpty().withMessage("Kode wajib diisi"),
   body("text").isString().trim().notEmpty().withMessage("Pertanyaan wajib diisi"),
   body("categoryId").isInt({ min: 1 }).withMessage("Kategori tidak valid"),
-  body("type").isIn([...QUESTION_TYPES]).withMessage("Tipe soal tidak valid"),
-  body("difficulty").isIn([...DIFFICULTIES]).withMessage("Tingkat kesulitan tidak valid"),
-  body("status").optional().isIn([...STATUSES]).withMessage("Status tidak valid"),
+  body("type")
+    .isIn([...QUESTION_TYPES])
+    .withMessage("Tipe soal tidak valid"),
+  body("difficulty")
+    .isIn([...DIFFICULTIES])
+    .withMessage("Tingkat kesulitan tidak valid"),
+  body("status")
+    .optional()
+    .isIn([...STATUSES])
+    .withMessage("Status tidak valid"),
   body("options").isArray().withMessage("Opsi harus berupa array"),
   body("options.*.key").isString(),
   body("options.*.text").isString(),

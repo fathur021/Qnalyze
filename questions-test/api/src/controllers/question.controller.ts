@@ -71,7 +71,9 @@ export async function listPublic(req: Request, res: Response): Promise<void> {
   const result = await listQuestions(filters);
   res.status(HttpStatus.OK).json({
     ...result,
-    data: result.data.map(({ answer: _answer, explanation: _explanation, ...question }) => question),
+    data: result.data.map(
+      ({ answer: _answer, explanation: _explanation, ...question }) => question,
+    ),
   });
 }
 
