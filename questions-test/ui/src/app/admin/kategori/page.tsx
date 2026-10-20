@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { FolderOpen, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react"
-import { toast } from "sonner"
+import { useEffect, useState } from "react";
+import { FolderOpen, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
-import { PageHeader } from "@/components/admin/page-header"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { PageHeader } from "@/components/admin/page-header";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -15,7 +15,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,77 +26,110 @@ import {
   AlertDialogHeader,
   AlertDialogMedia,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { categories as initialCategories, toneClasses, type Category } from "@/lib/mock-data"
-import { cn } from "cn"
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  ApiError,
+  createCategory,
+  deleteCategory,
+  getCategories,
+  updateCategory,
+  type ApiCategory,
+} from "@/lib/api";
+import { toneClasses } from "@/lib/mock-data";
+import { cn } from "cn";
 
 export default function KategoriPage() {
-  const [categories, setCategories] = useState<Category[]>(initialCategories)
-  const [formOpen, setFormOpen] = useState(false)
-  const [editing, setEditing] = useState<Category | null>(null)
-  const [name, setName] = useState("")
-  const [description, setDescription] = useState("")
-  const [deleteTarget, setDeleteTarget] = useState<Category | null>(null)
+  const [categories, setCategories] = useState<ApiCategory[]>([]);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<ApiCategory | null>(null);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<ApiCategory | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const refreshCategories = async () => {
+    try {
+      setCategories(await getCategories());
+    } catch (error) {
+      toast.error(
+        error instanceof ApiError ? error.message : "Gagal memuat kategori.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void refreshCategories();
+  }, []);
 
   const openCreate = () => {
-    setEditing(null)
-    setName("")
-    setDescription("")
-    setFormOpen(true)
-  }
+    setEditing(null);
+    setName("");
+    setDescription("");
+    setFormOpen(true);
+  };
 
-  const openEdit = (category: Category) => {
-    setEditing(category)
-    setName(category.name)
-    setDescription(category.description)
-    setFormOpen(true)
-  }
+  const openEdit = (category: ApiCategory) => {
+    setEditing(category);
+    setName(category.name);
+    setDescription(category.description ?? "");
+    setFormOpen(true);
+  };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim()) {
-      toast.error("Nama kategori wajib diisi.")
-      return
+      toast.error("Nama kategori wajib diisi.");
+      return;
     }
-    if (editing) {
-      setCategories((prev) =>
-        prev.map((c) =>
-          c.id === editing.id ? { ...c, name, description } : c
-        )
-      )
-      toast.success("Kategori berhasil diperbarui.")
-    } else {
-      setCategories((prev) => [
-        ...prev,
-        {
-          id: `cat-${Date.now()}`,
-          name,
-          description,
-          questionCount: 0,
-          tone: "indigo",
-          createdAt: "Hari ini",
-        },
-      ])
-      toast.success("Kategori baru berhasil ditambahkan.")
+    setSaving(true);
+    try {
+      const input = {
+        name: name.trim(),
+        description: description.trim() || null,
+      };
+      if (editing) {
+        await updateCategory(editing.id, input);
+        toast.success("Kategori berhasil diperbarui.");
+      } else {
+        await createCategory(input);
+        toast.success("Kategori baru berhasil ditambahkan.");
+      }
+      await refreshCategories();
+      setFormOpen(false);
+    } catch (error) {
+      toast.error(
+        error instanceof ApiError ? error.message : "Gagal menyimpan kategori.",
+      );
+    } finally {
+      setSaving(false);
     }
-    setFormOpen(false)
-  }
+  };
 
-  const handleDelete = () => {
-    if (!deleteTarget) return
-    setCategories((prev) => prev.filter((c) => c.id !== deleteTarget.id))
-    toast.success(`Kategori "${deleteTarget.name}" dihapus.`)
-    setDeleteTarget(null)
-  }
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      await deleteCategory(deleteTarget.id);
+      toast.success(`Kategori "${deleteTarget.name}" dihapus.`);
+      setDeleteTarget(null);
+      await refreshCategories();
+    } catch (error) {
+      toast.error(
+        error instanceof ApiError ? error.message : "Gagal menghapus kategori.",
+      );
+    }
+  };
 
   return (
     <div className="space-y-5">
@@ -112,7 +145,7 @@ export default function KategoriPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {categories.map((category) => {
-          const tone = toneClasses[category.tone]
+          const tone = toneClasses[category.tone];
           return (
             <Card key={category.id} size="sm">
               <CardContent className="space-y-3">
@@ -121,7 +154,7 @@ export default function KategoriPage() {
                     className={cn(
                       "flex size-10 items-center justify-center rounded-lg",
                       tone.bg,
-                      tone.text
+                      tone.text,
                     )}
                   >
                     <FolderOpen className="size-5" />
@@ -169,14 +202,23 @@ export default function KategoriPage() {
                     {category.questionCount} soal
                   </Badge>
                   <span className="text-xs text-muted-foreground">
-                    Dibuat {category.createdAt}
+                    Dibuat{" "}
+                    {new Date(category.createdAt).toLocaleDateString("id-ID")}
                   </span>
                 </div>
               </CardContent>
             </Card>
-          )
+          );
         })}
       </div>
+      {categories.length === 0 && !loading ? (
+        <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+          Belum ada kategori.
+        </p>
+      ) : null}
+      {loading ? (
+        <p className="text-sm text-muted-foreground">Memuat kategori...</p>
+      ) : null}
 
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent>
@@ -214,7 +256,9 @@ export default function KategoriPage() {
             <Button variant="outline" onClick={() => setFormOpen(false)}>
               Batal
             </Button>
-            <Button onClick={handleSave}>Simpan</Button>
+            <Button onClick={() => void handleSave()} disabled={saving}>
+              {saving ? "Menyimpan..." : "Simpan"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -230,9 +274,8 @@ export default function KategoriPage() {
             </AlertDialogMedia>
             <AlertDialogTitle>Hapus kategori?</AlertDialogTitle>
             <AlertDialogDescription>
-              Kategori &quot;{deleteTarget?.name}&quot; beserta
-              {deleteTarget?.questionCount} soal di dalamnya akan dihapus. Tindakan
-              ini tidak dapat dibatalkan.
+              Kategori &quot;{deleteTarget?.name}&quot; akan dihapus. Kategori
+              yang masih memiliki soal tidak dapat dihapus.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -247,5 +290,5 @@ export default function KategoriPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  )
+  );
 }
