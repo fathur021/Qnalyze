@@ -120,7 +120,8 @@ export async function startAttempt(
     page: 1,
     limit: 10000,
     categoryId: input.categoryId,
-  } as never);
+    status: "Terbit",
+  });
 
   let selected = result.data;
   if (input.questionLimit !== undefined) {

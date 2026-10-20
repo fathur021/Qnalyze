@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { categories } from "@/lib/mock-data"
-import { categoryMeta, portalDashboard } from "@/lib/portal-data"
+import { portalDashboard } from "@/lib/portal-data"
 import { portalUser } from "@/lib/portal-user"
 
 export default function BerandaPage() {
@@ -201,7 +201,6 @@ export default function BerandaPage() {
             <CategoryCard
               key={category.id}
               category={category}
-              meta={categoryMeta[category.id]}
             />
           ))}
         </div>

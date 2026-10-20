@@ -77,6 +77,20 @@ export async function create(values: NewQuestion, executor: Executor = db): Prom
   return row;
 }
 
+/** Ubah soal dan kembalikan baris terbaru. */
+export async function update(
+  id: number,
+  values: Partial<NewQuestion>,
+  executor: Executor = db,
+): Promise<Question | undefined> {
+  const [row] = await executor
+    .update(questions)
+    .set({ ...values, updatedAt: new Date() })
+    .where(eq(questions.id, id))
+    .returning();
+  return row;
+}
+
 /** Hapus soal berdasarkan id dan kembalikan baris yang terhapus. */
 export async function remove(id: number, executor: Executor = db): Promise<Question | undefined> {
   const [row] = await executor.delete(questions).where(eq(questions.id, id)).returning();

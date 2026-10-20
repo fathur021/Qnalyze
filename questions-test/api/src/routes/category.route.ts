@@ -3,6 +3,7 @@ import { body, param } from "express-validator";
 import {
   create as createCategoryController,
   list as listCategoriesController,
+  listPublic as listPublicCategoriesController,
   remove as removeCategoryController,
   update as updateCategoryController,
 } from "../controllers/category.controller.js";
@@ -13,6 +14,7 @@ const TONES = ["indigo", "emerald", "amber", "rose", "sky", "violet"];
 
 export const categoryRouter: Router = Router();
 
+categoryRouter.get("/public", listPublicCategoriesController);
 categoryRouter.get("/", listCategoriesController);
 
 categoryRouter.post(
