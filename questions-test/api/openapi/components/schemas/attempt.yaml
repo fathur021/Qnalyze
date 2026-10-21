@@ -155,3 +155,27 @@ SubmitAttemptAnswersRequest:
             type: string
             description: Kunci opsi yang dipilih atau jawaban teks bebas
             example: C
+
+SaveAttemptAnswersRequest:
+  type: object
+  description: Simpan jawaban sementara tanpa mengakhiri pengerjaan.
+  required:
+    - answers
+  properties:
+    answers:
+      type: array
+      minItems: 1
+      items:
+        type: object
+        required:
+          - questionId
+          - answer
+        properties:
+          questionId:
+            type: integer
+            minimum: 1
+            example: 101
+          answer:
+            type: string
+            description: Kunci opsi yang dipilih atau jawaban teks bebas
+            example: C

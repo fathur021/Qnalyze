@@ -124,6 +124,8 @@ components:
       $ref: ./components/schemas/attempt.yaml#/StartAttemptRequest
     SubmitAttemptAnswersRequest:
       $ref: ./components/schemas/attempt.yaml#/SubmitAttemptAnswersRequest
+    SaveAttemptAnswersRequest:
+      $ref: ./components/schemas/attempt.yaml#/SaveAttemptAnswersRequest
     AdminUser:
       $ref: ./components/schemas/user.yaml#/AdminUser
     UpdateUserRequest:
