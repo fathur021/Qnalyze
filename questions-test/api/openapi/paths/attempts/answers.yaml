@@ -1,3 +1,37 @@
+patch:
+  tags:
+    - Attempts
+  summary: Simpan jawaban sementara
+  operationId: saveAttemptAnswers
+  description: >-
+    Menyimpan satu atau beberapa jawaban pada sesi yang masih berlangsung
+    tanpa mengakhiri pengerjaan. Jawaban dengan questionId yang sama
+    akan diperbarui.
+  parameters:
+    - $ref: ../../components/parameters.yaml#/IdParam
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/attempt.yaml#/SaveAttemptAnswersRequest
+  responses:
+    "200":
+      description: Jawaban sementara berhasil disimpan
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/attempt.yaml#/Attempt
+    "400":
+      $ref: ../../components/responses.yaml#/ValidationError
+    "404":
+      $ref: ../../components/responses.yaml#/NotFound
+    "409":
+      description: Sesi sudah selesai
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/common.yaml#/Error
 post:
   tags:
     - Attempts
